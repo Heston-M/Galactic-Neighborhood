@@ -1,4 +1,4 @@
-import { useThemeContext } from "@/contexts/UserContext";
+import { useThemeContext } from "@/contexts/ThemeContext";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 

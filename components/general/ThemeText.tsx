@@ -1,4 +1,4 @@
-import { useThemeContext } from "@/contexts/UserContext";
+import { useThemeContext } from "@/contexts/ThemeContext";
 import { StyleProp, StyleSheet, Text, TextStyle, View } from "react-native";
 
 export default function ThemeText({ children, style, type = "default", topic = undefined }: 

@@ -1,10 +1,14 @@
-import ThemeContextProvider from "@/contexts/UserContext";
+import ThemeContextProvider from "@/contexts/ThemeContext";
 import { Stack } from "expo-router";
 
 export default function RootLayout() {
   return (
     <ThemeContextProvider>
-      <Stack />
+      <Stack 
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
     </ThemeContextProvider>
   );
 }
