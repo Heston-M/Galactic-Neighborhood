@@ -1,5 +1,5 @@
-import { colors } from "@/constants/colors";
-import { colorFields, ThemeColor } from "@/types/themeColors";
+import { colors, headerColors, shadeColors } from "@/constants/colors";
+import { colorFields, headerFields, shadeFields, ThemeColor } from "@/types/themeColors";
 import { storage } from "@/utils/storage";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
@@ -44,12 +44,14 @@ export default function ThemeContextProvider({ children }: { children: React.Rea
    * @param color - The field to get the color for
    * @returns The color string
    */
-  const getThemeColor = (field: ThemeColor["field"], topic?: ThemeColor["topic"]) => {
+  const getThemeColor = (field: ThemeColor["field"], topic?: ThemeColor["topic"] | undefined) => {
     let colorValue = "";
     
-    if (colorFields.includes(field as (typeof colorFields)[number])) {
-      if (field === "headers" || field === "shades") {
-        colorValue = colors[theme][field as (typeof colorFields)[number]][topic as keyof typeof colors[typeof theme][(typeof colorFields)[number]]];
+    if (colorFields.includes(field as (typeof colorFields)[number]) || field === "header" || field === "shade") {
+      if (field === "header") {
+        colorValue = topic ? headerColors[theme][topic as (typeof headerFields)[number]] : (colors[theme]["text"] as string);
+      } else if (field === "shade") {
+        colorValue = topic ? shadeColors[theme][topic as (typeof shadeFields)[number]] : (colors[theme]["secondary"] as string);
       } else {
         colorValue = colors[theme][field as (typeof colorFields)[number]] as string;
       }
