@@ -1,14 +1,17 @@
+import { assetPaths } from "@/constants/assetPaths";
 import { colors, headerColors, shadeColors } from "@/constants/colors";
 import { colorFields, headerFields, shadeFields, ThemeColor } from "@/types/themeColors";
+import { ThemeIcon } from "@/types/themeIcons";
 import { storage } from "@/utils/storage";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
+import { ImageSourcePropType, useColorScheme } from "react-native";
 
 type ContextShape = {
   theme: "light" | "dark";
   preference: "light" | "dark" | "system" | null;
   setPreference: (theme: "light" | "dark" | "system") => void;
   getThemeColor: (field: ThemeColor["field"], topic?: ThemeColor["topic"]) => string;
+  getThemeIcon: (icon: ThemeIcon["field"]) => ImageSourcePropType;
 }
 
 const ThemeContext = createContext<ContextShape | undefined>(undefined);
@@ -61,8 +64,12 @@ export default function ThemeContextProvider({ children }: { children: React.Rea
     return colorValue;
   }
 
+  const getThemeIcon = (icon: ThemeIcon["field"]) => {
+    return assetPaths[theme].icons[icon];
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, preference, setPreference, getThemeColor }}>
+    <ThemeContext.Provider value={{ theme, preference, setPreference, getThemeColor, getThemeIcon }}>
       {children}
     </ThemeContext.Provider>
   );
