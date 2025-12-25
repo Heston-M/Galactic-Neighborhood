@@ -52,10 +52,10 @@ export default function ThemeContextProvider({ children }: { children: React.Rea
     let colorValue = "";
     
     if (colorFields.includes(field as (typeof colorFields)[number]) || field === "header" || field === "shade") {
-      if (field === "header") {
-        colorValue = topic ? headerColors[theme][topic as (typeof headerFields)[number]] : (colors[theme]["text"] as string);
-      } else if (field === "shade") {
+      if (field === "shade") {
         colorValue = topic ? shadeColors[theme][topic as (typeof shadeFields)[number]] : (colors[theme]["secondary"] as string);
+      } else if (topic) {
+        colorValue = headerColors[theme][topic as (typeof headerFields)[number]] as string;
       } else {
         colorValue = colors[theme][field as (typeof colorFields)[number]] as string;
       }
