@@ -1,0 +1,1 @@
+export type Topic = "general" | "characters" | "equipment" | "magic" | "rules";

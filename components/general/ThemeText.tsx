@@ -1,19 +1,18 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { Topic } from "@/types/topic";
 import { StyleProp, StyleSheet, Text, TextStyle, View } from "react-native";
 
 interface ThemeTextProps {
   children: React.ReactNode;
   style?: StyleProp<TextStyle>;
   type?: "default" | "title" | "header" | "subheader" | "caption";
-  topic?: "characters" | "equipment" | "magic" | "rules";
+  topic?: Topic;
 }
 
-export default function ThemeText({ children, style, type = "default", topic = undefined }: ThemeTextProps) {
+export default function ThemeText({ children, style, type = "default", topic = "general" }: ThemeTextProps) {
   
-  const headerTopics = ["characters", "equipment", "magic", "rules"];
-
   const { getThemeColor } = useThemeContext();
-  const textColor = (topic && headerTopics.includes(topic)) ? getThemeColor("header", topic) : getThemeColor("text");
+  const textColor = getThemeColor("text", topic);
 
   return (
     <View style={{ alignItems: type === "header" ? "flex-start" : "center" }}>

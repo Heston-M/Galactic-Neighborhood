@@ -1,4 +1,5 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { Topic } from "@/types/topic";
 import { useEffect, useState } from "react";
 import { DimensionValue, Easing, StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
@@ -7,11 +8,11 @@ import ThemeText from "./ThemeText";
 
 interface LoadingOverlayProps {
   visible: boolean;
-  targetTopic?: "general" | "characters" | "equipment" | "magic" | "rules";
+  targetTopic?: Topic;
   onDoneAnimating: () => void;
 }
 
-export default function LoadingOverlay({ visible, targetTopic = "general", onDoneAnimating }: LoadingOverlayProps) {
+export default function LoadingOverlay({ visible, targetTopic = "general", onDoneAnimating = () => {} }: LoadingOverlayProps) {
   const { getThemeColor } = useThemeContext();
   const primaryColor = getThemeColor("primary");
   const borderColor = getThemeColor("secondary");
@@ -78,9 +79,10 @@ export default function LoadingOverlay({ visible, targetTopic = "general", onDon
           scheduleOnRN(setWidth, "0%");
           scheduleOnRN(setHeight, "0%");
         }
+        onDoneAnimating();
       }
     );
-  }, [visible]);
+  }, [visible, onDoneAnimating]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],

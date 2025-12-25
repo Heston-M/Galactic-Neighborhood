@@ -2,6 +2,7 @@ import { assetPaths } from "@/constants/assetPaths";
 import { colors, headerColors, shadeColors } from "@/constants/colors";
 import { colorFields, headerFields, shadeFields, ThemeColor } from "@/types/themeColors";
 import { ThemeIcon } from "@/types/themeIcons";
+import { Topic } from "@/types/topic";
 import { storage } from "@/utils/storage";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ImageSourcePropType, useColorScheme } from "react-native";
@@ -10,7 +11,7 @@ type ContextShape = {
   theme: "light" | "dark";
   preference: "light" | "dark" | "system" | null;
   setPreference: (theme: "light" | "dark" | "system") => void;
-  getThemeColor: (field: ThemeColor["field"], topic?: ThemeColor["topic"]) => string;
+  getThemeColor: (field: ThemeColor["field"], topic?: Topic) => string;
   getThemeIcon: (icon: ThemeIcon["field"]) => ImageSourcePropType;
 }
 
@@ -47,7 +48,7 @@ export default function ThemeContextProvider({ children }: { children: React.Rea
    * @param color - The field to get the color for
    * @returns The color string
    */
-  const getThemeColor = (field: ThemeColor["field"], topic?: ThemeColor["topic"] | undefined) => {
+  const getThemeColor = (field: ThemeColor["field"], topic?: Topic) => {
     let colorValue = "";
     
     if (colorFields.includes(field as (typeof colorFields)[number]) || field === "header" || field === "shade") {
