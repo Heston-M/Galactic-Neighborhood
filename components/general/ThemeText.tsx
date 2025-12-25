@@ -1,10 +1,14 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { StyleProp, StyleSheet, Text, TextStyle, View } from "react-native";
 
-export default function ThemeText({ children, style, type = "default", topic = undefined }: 
-  { children: React.ReactNode, style?: StyleProp<TextStyle>, 
-    type?: "default" | "title" | "header" | "subheader" | "caption", 
-    topic?: "characters" | "equipment" | "magic" | "rules" }) {
+interface ThemeTextProps {
+  children: React.ReactNode;
+  style?: StyleProp<TextStyle>;
+  type?: "default" | "title" | "header" | "subheader" | "caption";
+  topic?: "characters" | "equipment" | "magic" | "rules";
+}
+
+export default function ThemeText({ children, style, type = "default", topic = undefined }: ThemeTextProps) {
   
   const headerTopics = ["characters", "equipment", "magic", "rules"];
 
