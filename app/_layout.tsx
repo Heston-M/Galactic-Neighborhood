@@ -1,13 +1,28 @@
+import LoadingOverlay from "@/components/general/LoadingOverlay";
 import NavMenu from "@/components/navigation/NavMenu";
 import ThemeContextProvider from "@/contexts/ThemeContext";
 import { Stack } from "expo-router";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function RootLayout() {
+  const [loadingVisible, setLoadingVisible] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoadingVisible(false);
+    }, 2000);
+  }, [loadingVisible]);
+
   return (
     <ThemeContextProvider>
       <NavMenu style={styles.navMenu} />
       <View style={styles.contentContainer}>
+        <LoadingOverlay 
+          visible={loadingVisible} 
+          targetTopic="general" 
+          onDoneAnimating={() => {}} 
+        />
         <Stack 
           screenOptions={{
             headerShown: false,

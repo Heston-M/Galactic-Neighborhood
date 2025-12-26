@@ -20,10 +20,10 @@ export default function LoadingOverlay({ visible, targetTopic = "general", onDon
   const [width, setWidth] = useState("100%");
   const [height, setHeight] = useState("100%");
 
-  const characterColor = getThemeColor("header", "characters");
-  const equipmentColor = getThemeColor("header", "equipment");
-  const magicColor = getThemeColor("header", "magic");
-  const rulesColor = getThemeColor("header", "rules");
+  const characterColor = getThemeColor("topic", "characters");
+  const equipmentColor = getThemeColor("topic", "equipment");
+  const magicColor = getThemeColor("topic", "magic");
+  const rulesColor = getThemeColor("topic", "rules");
   const colors = new Map<string, string>([
     ["general", borderColor],
     ["characters", characterColor],
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     gap: 10,
     zIndex: 1000,
     alignItems: "center",
-    justifyContent: "center",
+    paddingTop: 300,
   },
   loading: {
     width: 40,

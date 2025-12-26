@@ -1,6 +1,6 @@
 import { assetPaths } from "@/constants/assetPaths";
-import { colors, headerColors, shadeColors } from "@/constants/colors";
-import { colorFields, headerFields, shadeFields, ThemeColor } from "@/types/themeColors";
+import { colors, topicColors } from "@/constants/colors";
+import { colorFields, ThemeColor } from "@/types/themeColors";
 import { ThemeIcon } from "@/types/themeIcons";
 import { Topic } from "@/types/topic";
 import { storage } from "@/utils/storage";
@@ -51,13 +51,13 @@ export default function ThemeContextProvider({ children }: { children: React.Rea
   const getThemeColor = (field: ThemeColor["field"], topic?: Topic) => {
     let colorValue = "";
     
-    if (colorFields.includes(field as (typeof colorFields)[number]) || field === "header" || field === "shade") {
-      if (field === "shade") {
-        colorValue = topic ? shadeColors[theme][topic as (typeof shadeFields)[number]] : (colors[theme]["secondary"] as string);
-      } else if (topic) {
-        colorValue = headerColors[theme][topic as (typeof headerFields)[number]] as string;
+    if (colorFields.includes(field as (typeof colorFields)[number]) || field === "topic" || field === "shade") {
+      if (field === "topic") {
+        colorValue = topic ? topicColors[theme === "dark" ? "light" : "dark"][topic as keyof typeof topicColors[typeof theme]] : topicColors[theme === "dark" ? "light" : "dark"]["general"];
+      } else if (field === "shade") {
+        colorValue = topic ? topicColors[theme][topic as keyof typeof topicColors[typeof theme]] : topicColors[theme]["general"];
       } else {
-        colorValue = colors[theme][field as (typeof colorFields)[number]] as string;
+        colorValue = colors[theme][field as keyof typeof colors[typeof theme]];
       }
     } else {
       throw new Error(`Invalid field: ${field}`);

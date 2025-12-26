@@ -1,18 +1,16 @@
-import { useThemeContext } from "@/contexts/ThemeContext";
-import { Page } from "@/types/page";
-import { Image } from "expo-image";
-import { useState } from "react";
-import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { ReactNodePage } from "@/types/page";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import ThemeText from "../general/ThemeText";
 import ThemeView from "../general/ThemeView";
 import NavButton from "./NavButton";
 import NavSection from "./NavSection";
+import QuickAccessIcon from "./QuickAccessIcon";
 
 interface NavMenuProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const tempPages: Page[] = [
+const tempPages: ReactNodePage[] = [
   {
     title: "Character 1",
     topic: "characters",
@@ -58,29 +56,14 @@ const tempPages: Page[] = [
 ];
 
 export default function NavMenu({ style }: NavMenuProps) {
-  const { getThemeIcon, getThemeColor } = useThemeContext();
-  const borderColor = getThemeColor("secondary");
-  const bookmarkIcon = getThemeIcon("bookmark");
-  const bookOpenIcon = getThemeIcon("bookOpen");
 
-  const [savesHover, setSavesHover] = useState(false);
-  const [savesShown, setSavesShown] = useState(false);
-
-  const handlePress = (page: Page) => {
+  const handlePress = (page: ReactNodePage) => {
     console.log(page.title + " pressed");
   }
 
   return (
     <ThemeView style={[styles.container, style]}>
-      <Pressable 
-        style={styles.quickAccessIconContainer} 
-        onPress={() => setSavesShown(!savesShown)}
-        onHoverIn={() => setSavesHover(true)}
-        onHoverOut={() => setSavesHover(false)}
-      >
-        {!savesShown && <Image source={bookmarkIcon} style={[styles.bookmarkIcon, { borderWidth: savesHover ? 2 : 0, borderColor }]} />}
-        {savesShown && <Image source={bookOpenIcon} style={[styles.bookOpenIcon, { borderWidth: savesHover ? 2 : 0, borderColor }]} />}
-      </Pressable>
+      <QuickAccessIcon onPress={() => {}} />
       <View style={styles.sectionsContainer}>
         <View style={styles.sectionContainer}>
           <NavSection
@@ -113,22 +96,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 10,
-  },
-  quickAccessIconContainer: {
-    position: "absolute",
-    left: 0,
-    width: 60,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bookmarkIcon: {
-    width: 40,
-    height: 40,
-  },
-  bookOpenIcon: {
-    width: 50,
-    height: 40,
   },
   sectionsContainer: {
     flexDirection: "row",

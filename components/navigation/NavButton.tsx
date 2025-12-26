@@ -1,11 +1,11 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { Page } from "@/types/page";
+import { ReactNodePage } from "@/types/page";
 import { Pressable, StyleSheet } from "react-native";
 import NavLink from "./NavLink";
 
 interface NavButtonProps {
-  page: Page;
-  onPress: (page: Page) => void;
+  page: ReactNodePage;
+  onPress: (page: ReactNodePage) => void;
 }
 
 export default function NavButton({ page, onPress }: NavButtonProps) {
@@ -19,7 +19,7 @@ export default function NavButton({ page, onPress }: NavButtonProps) {
 
   return (
     <Pressable style={[styles.button, { backgroundColor, borderColor }]} onPress={handlePress}>
-      <NavLink style={styles.link} page={page} usePreview={false} onPress={onPress} />
+      <NavLink style={styles.link} page={page} colorByTopic={false} usePreview={false} onPress={onPress} />
     </Pressable>
   );
 }

@@ -12,7 +12,7 @@ interface ThemeTextProps {
 export default function ThemeText({ children, style, type = "default", topic = "general" }: ThemeTextProps) {
   
   const { getThemeColor } = useThemeContext();
-  const textColor = getThemeColor("text", topic);
+  const textColor = topic ? getThemeColor("topic", topic) : getThemeColor("text");
 
   return (
     <View style={{ alignItems: type === "header" ? "flex-start" : "center" }}>

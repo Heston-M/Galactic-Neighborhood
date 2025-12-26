@@ -1,11 +1,10 @@
-import { colors, headerColors, shadeColors } from "@/constants/colors";
+import { colors, topicColors } from "@/constants/colors";
 import { Topic } from "./topic";
 
 export const colorFields = Object.keys(colors["light"]) as (keyof typeof colors["light"])[];
-export const headerFields = Object.keys(headerColors["light"]) as (keyof typeof headerColors["light"])[];
-export const shadeFields = Object.keys(shadeColors["light"]) as (keyof typeof shadeColors["light"])[];
+export const topicFields = Object.keys(topicColors["light"]) as (keyof typeof topicColors["light"])[];
 
 export interface ThemeColor {
-  field: (typeof colorFields)[number] | "header" | "shade";
+  field: (typeof colorFields)[number] | "topic" | "shade";
   topic?: Topic;
 }
