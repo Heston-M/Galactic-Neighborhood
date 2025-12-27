@@ -9,7 +9,6 @@ export type ReactNodePage = {
 }
 
 export type JsonPage = {
-  id: string;
   title: string;
   topic: Topic;
   route: string;
@@ -17,12 +16,14 @@ export type JsonPage = {
     type: "text" | "heading" | "aspects" | "list" | "table" |  "note";
     text?: string;
     headingLevel?: 1 | 2;
-    aspects?: Array<{
+    aspectsInfo?: Array<{
       name: string;
       value: string;
     }>;
-    listType?: "bullet" | "number";
-    listItems?: Array<string>;
+    listInfo?: {
+      listType?: "bullet" | "number";
+      listItems?: Array<string>;
+    };
     tableInfo?: {
       title?: string;
       headers?: Array<string>;
@@ -35,7 +36,9 @@ export type JsonPage = {
       isDamageTable?: boolean;
       damageTableOutput?: string;
     }
-    noteTitle?: string;
-    noteContent?: string;
+    noteInfo?: {
+      noteTitle?: string;
+      noteContent?: string;
+    };
   }>;
 }

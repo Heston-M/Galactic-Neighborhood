@@ -1,10 +1,13 @@
 [
   {
-    "id": "page-001",
-    "title": "Introduction to Combat",
+    "title": "Introduction to Combat for Dummies",
     "topic": "rules",
     "route": "/rules/combat-intro",
     "sections": [
+      {
+        "type": "text",
+        "text": "This is a test of the collapsible component. It should be able to collapse and expand the content."
+      },
       {
         "type": "heading",
         "text": "Combat Basics",
@@ -21,13 +24,15 @@
       },
       {
         "type": "list",
-        "listType": "number",
-        "listItems": [
-          "Initiative Phase: All participants roll for initiative",
-          "Action Phase: Characters take actions in initiative order",
-          "Resolution Phase: Effects are resolved and damage is applied",
-          "End Phase: Status effects are updated"
-        ]
+        "listInfo": {
+          "listType": "number",
+          "listItems": [
+            "Initiative Phase: All participants roll for initiative",
+            "Action Phase: Characters take actions in initiative order",
+            "Resolution Phase: Effects are resolved and damage is applied",
+            "End Phase: Status effects are updated"
+          ]
+        }
       },
       {
         "type": "table",
@@ -42,11 +47,28 @@
           "columnAlignments": ["flex-start", "center"],
           "columnWidths": [100, 100]
         }
+      },
+      {
+        "type": "heading",
+        "text": "Action Phase",
+        "headingLevel": 1
+      },
+      {
+        "type": "text",
+        "text": "The action phase is the main phase of combat. During this phase, characters take actions in initiative order."
+      },
+      {
+        "type": "list",
+        "listInfo": {
+          "listType": "number",
+          "listItems": [
+            "Action Phase: Characters take actions in initiative order"
+          ]
+        }
       }
     ]
   },
   {
-    "id": "page-002",
     "title": "Fireball Spell",
     "topic": "magic",
     "route": "/magic/fireball",
@@ -58,7 +80,7 @@
       },
       {
         "type": "aspects",
-        "aspects": [
+        "aspectsInfo": [
           { "name": "School", "value": "Evocation" },
           { "name": "Level", "value": "3" },
           { "name": "Range", "value": "150 feet" }
@@ -85,13 +107,14 @@
       },
       {
         "type": "note",
-        "noteTitle": "Important",
-        "noteContent": "The fire ignites flammable objects in the area that aren't being worn or carried."
+        "noteInfo": {
+          "noteTitle": "Important",
+          "noteContent": "The fire ignites flammable objects in the area that aren't being worn or carried."
+        }
       }
     ]
   },
   {
-    "id": "page-003",
     "title": "Longsword",
     "topic": "equipment",
     "route": "/equipment/longsword",
@@ -103,7 +126,7 @@
       },
       {
         "type": "aspects",
-        "aspects": [
+        "aspectsInfo": [
           { "name": "Type", "value": "Melee Weapon" },
           { "name": "Cost", "value": "15 gp" },
           { "name": "Weight", "value": "3 lbs" }
@@ -130,7 +153,6 @@
     ]
   },
   {
-    "id": "page-004",
     "title": "Character Creation Guide",
     "topic": "characters",
     "route": "/characters/creation",
@@ -151,13 +173,15 @@
       },
       {
         "type": "list",
-        "listType": "bullet",
-        "listItems": [
-          "Human: Versatile and adaptable",
-          "Elf: Graceful and long-lived",
-          "Dwarf: Hardy and skilled craftsmen",
-          "Halfling: Brave and lucky"
-        ]
+        "listInfo": {
+          "listType": "bullet",
+          "listItems": [
+            "Human: Versatile and adaptable",
+            "Elf: Graceful and long-lived",
+            "Dwarf: Hardy and skilled craftsmen",
+            "Halfling: Brave and lucky"
+          ]
+        }
       },
       {
         "type": "heading",
@@ -166,23 +190,26 @@
       },
       {
         "type": "list",
-        "listType": "bullet",
-        "listItems": [
-          "Fighter: Master of combat",
-          "Wizard: Master of arcane magic",
-          "Rogue: Master of stealth and skill",
-          "Cleric: Master of divine magic"
-        ]
+        "listInfo": {
+          "listType": "bullet",
+          "listItems": [
+            "Fighter: Master of combat",
+            "Wizard: Master of arcane magic",
+            "Rogue: Master of stealth and skill",
+            "Cleric: Master of divine magic"
+          ]
+        }
       },
       {
         "type": "note",
-        "noteTitle": "Tip",
-        "noteContent": "Consider your character's background and personality when making these choices. A well-rounded character is more fun to play!"
+        "noteInfo": {
+          "noteTitle": "Tip",
+          "noteContent": "Consider your character's background and personality when making these choices. A well-rounded character is more fun to play!"
+        }
       }
     ]
   },
   {
-    "id": "page-005",
     "title": "Game Overview",
     "topic": "general",
     "route": "/general/overview",
@@ -197,19 +224,25 @@
         "text": "This is a tabletop role-playing game where you take on the role of heroic adventurers exploring a fantasy world filled with magic, monsters, and mystery."
       },
       {
+        "type": "text",
+        "text": "In this game, you will take on the role of heroic adventurers exploring a fantasy world filled with magic, monsters, and mystery."
+      },
+      {
         "type": "heading",
         "text": "Core Concepts",
         "headingLevel": 2
       },
       {
         "type": "list",
-        "listType": "number",
-        "listItems": [
-          "The Game Master (GM) describes the world and situations",
-          "Players describe what their characters do",
-          "Dice rolls determine success or failure",
-          "Collaborative storytelling creates the adventure"
-        ]
+        "listInfo": {
+          "listType": "number",
+          "listItems": [
+            "The Game Master (GM) describes the world and situations",
+            "Players describe what their characters do",
+            "Dice rolls determine success or failure",
+            "Collaborative storytelling creates the adventure"
+          ]
+        }
       },
       {
         "type": "table",
@@ -232,7 +265,6 @@
     ]
   },
   {
-    "id": "page-006",
     "title": "Armor Class Explained",
     "topic": "rules",
     "route": "/rules/armor-class",
@@ -264,8 +296,10 @@
       },
       {
         "type": "note",
-        "noteTitle": "Remember",
-        "noteContent": "AC can be modified by Dexterity, shields, magic items, and other factors."
+        "noteInfo": {
+          "noteTitle": "Remember",
+          "noteContent": "AC can be modified by Dexterity, shields, magic items, and other factors."
+        }
       }
     ]
   }

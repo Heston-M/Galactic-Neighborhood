@@ -1,3 +1,4 @@
+import Collapsible from "@/components/general/Collapsible";
 import List from "@/components/general/List";
 import ThemeText from "@/components/general/ThemeText";
 import ThemeView from "@/components/general/ThemeView";
@@ -12,99 +13,142 @@ interface PageRendererProps {
 }
 
 export default function PageRenderer({ page }: PageRendererProps) {
-  const sectionNodes: React.ReactNode[] = [];
-  let content: React.ReactNode = null;
-
-  if (!page.sections) {
-    return null;
-  }
-
   const [containerWidth, setContainerWidth] = useState(0);
-  const [tableScaleFactors, setTableScaleFactors] = useState<Map<string, number>>(new Map());
-  const [tableDimensions, setTableDimensions] = useState<Map<string, { width: number, height: number }>>(new Map());
 
-  let keys = new Map<string, number>();
+  // Title component
+  const title = <View style={styles.titleContainer}>
+      <ThemeText type="title" topic={page.topic}>{page.title}</ThemeText>
+    </View>;
 
-  for (const section of page.sections) {
-    const key = `${section.type}-${keys.get(section.type) ?? 0}`;
-    keys.set(section.type, (keys.get(section.type) ?? 0) + 1);
-
-    switch (section.type) {
-      case "text":
-        content = <ThemeText type="default">{section.text}</ThemeText>;
-        break;
-      case "heading":
-        content = <ThemeText type={section.headingLevel === 1 ? "header" : "subheader"} topic={page.topic}>{section.text}</ThemeText>;
-        break;
-      case "aspects":
-        content = <View style={styles.aspectsContainer}>
-          {section.aspects?.map((aspect, index) => <ThemeText 
-            key={index}
-            type="caption" 
-            style={{ fontWeight: "bold" }}
-          >
-            {aspect.name}: {aspect.value}
-          </ThemeText>)}
-        </View>;
-        break;
-      case "list":
-        content = <List type={section.listType}>{section.listItems?.map((item, index) => <ThemeText key={index} type="default">{item}</ThemeText>)}</List>;
-        break;
-      case "table":
-        content = section.tableInfo ? <Table 
-          title={section.tableInfo.title ? <ThemeText type="subheader" topic={page.topic}>{section.tableInfo.title}</ThemeText> : undefined} 
-          topic={page.topic}
-          headers={section.tableInfo.isDamageTable ? [section.tableInfo.damageTableOutput ?? "", "Die Roll"] : section.tableInfo.headers ?? []} 
-          rows={section.tableInfo.rows ?? []} 
-          rowAlignments={section.tableInfo.columnAlignments ?? []}
-          columnWidths={section.tableInfo.columnWidths ?? []}
-          wrappableColumns={section.tableInfo.wrappableColumns ?? []}
-          flipTable={section.tableInfo.isDamageTable ? true : section.tableInfo.flipTable ?? false}
-          checkerboard={section.tableInfo.isDamageTable ? true : section.tableInfo.checkerboard ?? false}
-          containerWidth={containerWidth}
-          onDimensionsChange={(scaleFactor, newWidth, newHeight) => {
-            setTableScaleFactors(prev => {
-              const newScaleFactors = new Map(prev);
-              newScaleFactors.set(key, scaleFactor);
-              return newScaleFactors;
-            });
-            setTableDimensions(prev => {
-              const newDimensions = new Map(prev);
-              newDimensions.set(key, { width: newWidth, height: newHeight });
-              return newDimensions;
-            });
-          }}
-        />
-        : null;
-        break;
-      case "note":
-        content = <Note 
-          title={<ThemeText type="subheader">{section.noteTitle}</ThemeText>}
-          content={<ThemeText type="default">{section.noteContent}</ThemeText>}
-          topic={page.topic}
-        />;
-        break;
-      default:
-        break;
+  const sections = () => {
+    if (!page.sections) {
+      return [];
     }
-    sectionNodes.push( 
-      <View 
-        key={key} 
-        style={[
-          section.type === "table" ? styles.tableContainer : styles.sectionContainer,
-          { width: tableDimensions.get(key)?.width ?? undefined, height: tableDimensions.get(key)?.height ?? undefined }
-        ]}
-      >
-        {content}
-      </View> 
-    );
-  }
+
+    const sectionNodes: React.ReactNode[] = [];
+    const [tableDimensions, setTableDimensions] = useState<Map<string, { width: number, height: number }>>(new Map());
+
+    let keys = new Map<string, number>();
+
+    // Iterate through each section and create the appropriate content for each type of section.
+    let content: React.ReactNode[] = [];
+    let collapsibleHeader: React.ReactNode | null = null;
+
+    function addSection() {
+      const key = `section-${keys.get("section") ?? 0}`;
+      keys.set("section", (keys.get("section") ?? 0) + 1);
+
+      if (collapsibleHeader) {
+        sectionNodes.push(
+          <Collapsible 
+            key={key} 
+            topic={page.topic} 
+            header={collapsibleHeader}
+            style={{ width: containerWidth }}
+            childrenStyle={{ gap: 10 }}
+          >
+            {content}
+          </Collapsible>
+        )
+        collapsibleHeader = null;
+      } else {
+        sectionNodes.push(
+          <View 
+            key={key} 
+            style={styles.sectionContainer}
+          >
+            {content}
+          </View> 
+        )
+      }
+      content = [];
+    }
+
+    for (const section of page.sections) {
+      const key = `${section.type}-${keys.get(section.type) ?? 0}`;
+      keys.set(section.type, (keys.get(section.type) ?? 0) + 1);
+
+      switch (section.type) {
+        case "text":
+          content.push(<ThemeText key={key} type="default">{section.text}</ThemeText>);
+          break;
+        case "heading":
+          if (section.headingLevel === 1) {
+            addSection();
+            collapsibleHeader = <ThemeText type={"header"} topic={page.topic}>{section.text}</ThemeText>;
+          } else {
+            content.push(<ThemeText key={key} type={"subheader"} topic={page.topic} style={{ justifyContent: "flex-start" }}>{section.text}</ThemeText>);
+          }
+          break;
+        case "aspects":
+          content.push(<View key={key} style={styles.aspectsContainer}>
+            {section.aspectsInfo?.map((aspect, index) => <ThemeText 
+              key={index}
+              type="caption" 
+              style={{ fontWeight: "bold" }}
+            >
+              {aspect.name}: {aspect.value}
+            </ThemeText>)}
+          </View>);
+          break;
+        case "list":
+          content.push(<List key={key} type={section.listInfo?.listType ?? "bullet"}>{section.listInfo?.listItems?.map((item, index) => <ThemeText key={index} type="default">{item}</ThemeText>)}</List>);
+          break;
+        case "table":
+          content.push(
+            <View 
+              key={key} 
+              style={[
+                styles.tableContainer,
+                { width: tableDimensions.get(key)?.width ?? undefined, height: tableDimensions.get(key)?.height ?? undefined }
+              ]}
+            >
+              {section.tableInfo ? <Table 
+                title={section.tableInfo.title ? <ThemeText type="subheader" topic={page.topic}>{section.tableInfo.title}</ThemeText> : undefined} 
+                topic={page.topic}
+                headers={section.tableInfo.isDamageTable ? [section.tableInfo.damageTableOutput ?? "", "Die Roll"] : section.tableInfo.headers ?? []} 
+                rows={section.tableInfo.rows ?? []} 
+                rowAlignments={section.tableInfo.columnAlignments ?? []}
+                columnWidths={section.tableInfo.columnWidths ?? []}
+                wrappableColumns={section.tableInfo.wrappableColumns ?? []}
+                flipTable={section.tableInfo.isDamageTable ? true : section.tableInfo.flipTable ?? false}
+                checkerboard={section.tableInfo.isDamageTable ? true : section.tableInfo.checkerboard ?? false}
+                containerWidth={containerWidth}
+                onDimensionsChange={(newWidth, newHeight) => {
+                  setTableDimensions(prev => {
+                    const newDimensions = new Map(prev);
+                    newDimensions.set(key, { width: newWidth, height: newHeight });
+                    return newDimensions;
+                  });
+                }}
+              />
+              : null}
+            </View>
+          );
+          break;
+        case "note":
+          content.push(<Note 
+            key={key}
+            title={<ThemeText type="subheader">{section.noteInfo?.noteTitle}</ThemeText>}
+            content={<ThemeText type="default">{section.noteInfo?.noteContent}</ThemeText>}
+            topic={page.topic}
+          />);
+          break;
+        default:
+          break;
+      }
+    }
+    addSection();
+    return sectionNodes;
+  };
+
   return (
     <ThemeView 
       style={styles.container} 
-      onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width - 20)}
+      onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width - 22)}
     >
-      {sectionNodes}
+      {title}
+      {sections()}
     </ThemeView>
   );
 }
@@ -116,6 +160,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 10,
   },
+  titleContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
   sectionContainer: {
     justifyContent: "flex-start",
     alignItems: "flex-start",
@@ -123,7 +171,6 @@ const styles = StyleSheet.create({
   tableContainer: {
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 2,
   },
   aspectsContainer: {
     justifyContent: "flex-start",

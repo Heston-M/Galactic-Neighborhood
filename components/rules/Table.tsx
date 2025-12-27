@@ -16,7 +16,7 @@ interface TableProps {
   checkerboard?: boolean;
   containerWidth?: number;
   style?: StyleProp<ViewStyle>;
-  onDimensionsChange?: (scaleFactor: number, newWidth: number, newHeight: number) => void;
+  onDimensionsChange?: (newWidth: number, newHeight: number) => void;
 }
 
 export default function Table({ 
@@ -47,9 +47,9 @@ export default function Table({
 
   useEffect(() => {
     if (containerWidth > 0 && tableWidth > 0) {
-      const newScaleFactor = Math.min(1, containerWidth / tableWidth);
+      const newScaleFactor = Math.min(1, (containerWidth - 20) / tableWidth);
       setScaleFactor(newScaleFactor);
-      onDimensionsChange?.(newScaleFactor, newScaleFactor * tableWidth - 4, newScaleFactor * tableHeight);
+      onDimensionsChange?.(newScaleFactor * tableWidth, newScaleFactor * tableHeight);
     }
   }, [containerWidth, tableWidth, tableHeight]);
 

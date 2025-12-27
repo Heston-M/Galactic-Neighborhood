@@ -15,11 +15,10 @@ export default function ThemeText({ children, style, type = "default", topic = "
   const textColor = topic ? getThemeColor("topic", topic) : getThemeColor("text");
 
   return (
-    <View style={{ alignItems: type === "header" ? "flex-start" : "center" }}>
+    <View style={{ alignItems: "flex-start" }}>
       <Text style={[styles[type], style, { color: textColor }]}>
         {children}
       </Text>
-      {type === "header" && <View style={[styles.headerSeparator, { backgroundColor: textColor }]} />}
     </View>
   );
 }
@@ -31,6 +30,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+    textAlign: "center",
   },
   header: {
     textAlign: "left",

@@ -69,7 +69,6 @@ export default function NavMenu({ style }: NavMenuProps) {
           <NavSection
             style={styles.section}
             topic="characters"
-            defaultOpen={false}
           >
             <NavButton page={tempPages[0]} onPress={handlePress} />
             <NavButton page={tempPages[1]} onPress={handlePress} />
@@ -80,7 +79,6 @@ export default function NavMenu({ style }: NavMenuProps) {
           <NavSection
             style={styles.section}
             topic="equipment"
-            defaultOpen={false}
           >
             <NavButton page={tempPages[3]} onPress={handlePress} />
             <NavButton page={tempPages[4]} onPress={handlePress} />

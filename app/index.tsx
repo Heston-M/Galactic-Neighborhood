@@ -24,7 +24,7 @@ export default function Index() {
           {noticeMessage}
         </Notice>
         {pages.map((page) => (
-          <PageRenderer key={page.id} page={page} />
+          <PageRenderer key={page.route} page={page} />
         ))}
       </ThemeView>
     </ThemeScrollView>
