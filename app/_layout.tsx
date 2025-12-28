@@ -1,5 +1,6 @@
 import LoadingOverlay from "@/components/general/LoadingOverlay";
 import NavMenu from "@/components/navigation/NavMenu";
+import NavContextProvider from "@/contexts/NavContext";
 import ThemeContextProvider from "@/contexts/ThemeContext";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
@@ -16,19 +17,21 @@ export default function RootLayout() {
 
   return (
     <ThemeContextProvider>
-      <NavMenu style={styles.navMenu} />
-      <View style={styles.contentContainer}>
-        <LoadingOverlay 
-          visible={loadingVisible} 
-          targetTopic="general" 
-          onDoneAnimating={() => {}} 
-        />
-        <Stack 
-          screenOptions={{
-            headerShown: false,
-          }}
-        />
-      </View>
+      <NavContextProvider>
+        <NavMenu style={styles.navMenu} />
+        <View style={styles.contentContainer}>
+          <LoadingOverlay 
+            visible={loadingVisible} 
+            targetTopic="general" 
+            onDoneAnimating={() => {}} 
+          />
+          <Stack 
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+        </View>
+      </NavContextProvider>
     </ThemeContextProvider>
   );
 }

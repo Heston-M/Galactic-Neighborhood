@@ -1,3 +1,4 @@
+import { PageTableName } from "./database";
 import { Topic } from "./topic";
 
 export type ReactNodePage = {
@@ -41,4 +42,12 @@ export type JsonPage = {
       noteContent?: string;
     };
   }>;
+}
+
+export const pageTableMap: Record<Topic, PageTableName> = {
+  general: 'general_pages',
+  characters: 'character_option_pages',
+  equipment: 'equipment_pages',
+  magic: 'magic_pages',
+  rules: 'rules_pages',
 }
