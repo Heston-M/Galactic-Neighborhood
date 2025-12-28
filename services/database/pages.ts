@@ -1,6 +1,10 @@
+import defaultPage from '@/constants/defaultPage.json';
 import { supabase } from '@/lib/supabase/client';
 import { PageTableName } from '@/types/database';
-import { JsonPage } from '@/types/page';
+import { JsonPage, pageTableMap } from '@/types/page';
+import { RouteSet } from '@/types/route';
+import { parseRoute } from '@/utils/routeParsing';
+
 
 /**
  * Error class for page-related API errors
@@ -20,7 +24,7 @@ export class PageFetchError extends Error {
 /**
  * Fetches a page from the specified table
  * 
- * @param tableName - The name of the table to query
+ * @param tableName - The name of the table to query, if not provided, all page tables will be searched
  * @param pageName - The unique name of the page to fetch
  * @returns Promise that resolves to the JsonPage data
  * @throws PageFetchError if the page is not found or an error occurs
@@ -31,9 +35,18 @@ export class PageFetchError extends Error {
  * ```
  */
 export async function getPageByName(
-  tableName: PageTableName,
-  pageName: string
+  pageName: string,
+  tableName?: PageTableName
 ): Promise<JsonPage> {
+  if (!tableName) {
+    for (const tableName of Object.values(pageTableMap)) {
+      const page = await getPageByName(pageName, tableName);
+      if (page) {
+        return page;
+      }
+    }
+    return defaultPage as JsonPage;
+  }
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -210,3 +223,69 @@ export async function getAllPages(
   }
 }
 
+/**
+ * Fetches all page routes from all page tables
+ * 
+ * @returns Promise that resolves to a RouteSet object containing all page routes
+ */
+export async function getAllPageRoutes(): Promise<RouteSet> {
+  const routes: RouteSet = { name: 'all', subsets: [], routes: [] };
+  for (const topic of Object.keys(pageTableMap)) {
+    const tableName = pageTableMap[topic as keyof typeof pageTableMap];
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('route, name');
+    if (error) {
+      throw new PageFetchError(
+        `Failed to fetch all page routes from "${tableName}": ${error.message}`,
+        tableName,
+        'all',
+        error
+      );
+    }
+    if (!data) {
+      continue;
+    }
+
+    const topicRouteSet: RouteSet = { name: topic, subsets: [], routes: [] };
+
+    const topicRootPage = data.find(row => row.route === `/${topic}`);
+    if (topicRootPage) {
+      topicRouteSet.rootPage = parseRoute(topicRootPage.route) ?? undefined;
+    }
+
+    for (const row of data) {
+      const route = parseRoute(row.route);
+      if (!route) {
+        continue;
+      }
+      if (route.subtopic) {
+        // find or create subset
+        const subset = topicRouteSet.subsets!.find(subset => subset.name === route.subtopic);
+        if (subset) {
+          // add to subset
+          subset.routes.push(route);
+        } else {
+          // create subset
+          const rootPage = topicRouteSet.routes.find(r => r.pageName === route.subtopic);
+          if (rootPage) {
+            // if root page was processed previously, remove it from routes
+            topicRouteSet.routes = topicRouteSet.routes.filter(r => r.pageName !== rootPage.pageName);
+          }
+          topicRouteSet.subsets!.push({ name: route.subtopic, subsets: [], routes: [route], rootPage: rootPage ?? undefined });
+        }
+      } else {
+        // check if page is a root page for an existing subset, or add to routes
+        const subset = topicRouteSet.subsets!.find(subset => subset.name === route.pageName);
+        if (subset) {
+          subset.rootPage = route;
+        } else {
+          topicRouteSet.routes.push(route);
+        }
+      }
+    }
+
+    routes.subsets!.push(topicRouteSet);
+  }
+  return routes;
+}

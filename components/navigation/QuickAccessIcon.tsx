@@ -31,9 +31,7 @@ export default function QuickAccessIcon({ onPress }: QuickAccessIconProps) {
 
 const styles = StyleSheet.create({
   quickAccessIconContainer: {
-    position: "absolute",
-    left: 0,
-    width: 60,
+    width: 50,
     height: 50,
     alignItems: "center",
     justifyContent: "center",

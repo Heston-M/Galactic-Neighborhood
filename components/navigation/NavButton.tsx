@@ -1,25 +1,31 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { ReactNodePage } from "@/types/page";
+import { Route } from "@/types/route";
+import { parseNameText } from "@/utils/markdown";
 import { Pressable, StyleSheet } from "react-native";
 import NavLink from "./NavLink";
 
 interface NavButtonProps {
-  page: ReactNodePage;
-  onPress: (page: ReactNodePage) => void;
+  route: Route;
+  onPress?: () => void;
 }
 
-export default function NavButton({ page, onPress }: NavButtonProps) {
+export default function NavButton({ route, onPress }: NavButtonProps) {
+  const text = parseNameText(route.pageName);
+  
   const { getThemeColor } = useThemeContext();
-  const backgroundColor = getThemeColor("shade", page.topic);
+  const backgroundColor = getThemeColor("shade", route.topic);
   const borderColor = getThemeColor("secondary");
 
-  const handlePress = () => {
-    onPress(page);
-  }
-
   return (
-    <Pressable style={[styles.button, { backgroundColor, borderColor }]} onPress={handlePress}>
-      <NavLink style={styles.link} page={page} colorByTopic={false} usePreview={false} onPress={onPress} />
+    <Pressable style={[styles.button, { backgroundColor, borderColor }]}>
+      <NavLink 
+        style={styles.link} 
+        route={route} 
+        text={text}
+        colorByTopic={false} 
+        usePreview={false} 
+        onPress={onPress} 
+      />
     </Pressable>
   );
 }

@@ -1,14 +1,8 @@
-import { PageTableName } from "./database";
-import { Topic } from "./topic";
+import { Topic } from './topic';
 
-export type ReactNodePage = {
-  title: string;
-  topic: Topic;
-  route: string;
-  snippet?: React.ReactNode;
-  content?: React.ReactNode;
-}
-
+/**
+ * JsonPage type - matches the type from the main app
+ */
 export type JsonPage = {
   title: string;
   topic: Topic;
@@ -44,10 +38,3 @@ export type JsonPage = {
   }>;
 }
 
-export const pageTableMap: Record<Topic, PageTableName> = {
-  general: 'general_pages',
-  characters: 'character_option_pages',
-  equipment: 'equipment_pages',
-  magic: 'magic_pages',
-  rules: 'rules_pages',
-}

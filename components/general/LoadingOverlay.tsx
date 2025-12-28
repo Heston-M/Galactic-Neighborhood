@@ -1,5 +1,5 @@
+import { useNavContext } from "@/contexts/NavContext";
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { Topic } from "@/types/topic";
 import { useEffect, useState } from "react";
 import { DimensionValue, Easing, StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from "react-native-reanimated";
@@ -7,12 +7,12 @@ import { scheduleOnRN } from "react-native-worklets";
 import ThemeText from "./ThemeText";
 
 interface LoadingOverlayProps {
-  visible: boolean;
-  targetTopic?: Topic;
   onDoneAnimating: () => void;
 }
 
-export default function LoadingOverlay({ visible, targetTopic = "general", onDoneAnimating = () => {} }: LoadingOverlayProps) {
+export default function LoadingOverlay({ onDoneAnimating = () => {} }: LoadingOverlayProps) {
+  const { loading, topic } = useNavContext();
+  
   const { getThemeColor } = useThemeContext();
   const primaryColor = getThemeColor("primary");
   const borderColor = getThemeColor("secondary");
@@ -35,7 +35,7 @@ export default function LoadingOverlay({ visible, targetTopic = "general", onDon
   const rotation = useSharedValue(0);
   const borderRadius = useSharedValue(0);
   const fillColor = useSharedValue(primaryColor);
-  const opacity = useSharedValue(visible ? 1 : 0);
+  const opacity = useSharedValue(loading ? 1 : 0);
 
   useEffect(() => {
     rotation.value = withRepeat(
@@ -56,7 +56,7 @@ export default function LoadingOverlay({ visible, targetTopic = "general", onDon
     );
     fillColor.value = withRepeat(
       withSequence(
-        withTiming(colors.get(targetTopic) || borderColor, { duration: 2000 }),
+        withTiming(colors.get(topic) || borderColor, { duration: 2000 }),
         withTiming(primaryColor, { duration: 2000 }),
       ),
       -1,
@@ -65,24 +65,24 @@ export default function LoadingOverlay({ visible, targetTopic = "general", onDon
   }, []);
 
   useEffect(() => {
-    if (visible) {
+    if (loading) {
       setWidth("100%");
       setHeight("100%");
     }
     opacity.value = withTiming(
-      visible ? 1 : 0, 
+      loading ? 1 : 0, 
       { 
         duration: 500 
       },
       (finished) => {
-        if (!visible && finished) {
+        if (!loading && finished) {
           scheduleOnRN(setWidth, "0%");
           scheduleOnRN(setHeight, "0%");
         }
         onDoneAnimating();
       }
     );
-  }, [visible, onDoneAnimating]);
+  }, [loading, onDoneAnimating]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],

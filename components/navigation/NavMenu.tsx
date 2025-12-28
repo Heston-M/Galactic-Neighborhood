@@ -1,91 +1,66 @@
-import { ReactNodePage } from "@/types/page";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import ThemeText from "../general/ThemeText";
-import ThemeView from "../general/ThemeView";
-import NavButton from "./NavButton";
-import NavSection from "./NavSection";
-import QuickAccessIcon from "./QuickAccessIcon";
+import Collapsible from "@/components/general/Collapsible";
+import ThemeText from "@/components/general/ThemeText";
+import ThemeView from "@/components/general/ThemeView";
+import NavSection from "@/components/navigation/NavSection";
+import QuickAccessIcon from "@/components/navigation/QuickAccessIcon";
+import { useNavContext } from "@/contexts/NavContext";
+import { useThemeContext } from "@/contexts/ThemeContext";
+import { StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle } from "react-native";
+
+const screenWidthThreshold = 750; // px
 
 interface NavMenuProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const tempPages: ReactNodePage[] = [
-  {
-    title: "Character 1",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Character 2",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Character 3",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Equipment 1",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
-  {
-    title: "Equipment 2 w/ long title",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
-  {
-    title: "Equipment 3",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
-];
-
 export default function NavMenu({ style }: NavMenuProps) {
+  const screenWidth = useWindowDimensions().width;
+  const wideScreenContent = screenWidth > screenWidthThreshold;
 
-  const handlePress = (page: ReactNodePage) => {
-    console.log(page.title + " pressed");
-  }
+  const { getThemeColor } = useThemeContext();
+  const backgroundColor = getThemeColor("primary");
+  const borderColor = getThemeColor("secondary");
+
+  const { routeSet, menuOpen, setMenuOpen } = useNavContext();
+
+  const menuSectionsContent = (
+    routeSet && routeSet.subsets && routeSet.subsets.length > 0 ? 
+    <NavSection
+      routeSet={routeSet}
+      level={0}
+      topStyle={wideScreenContent ? styles.sectionsContainerWide : [styles.sectionsContainerNarrow, { borderColor }]}
+      style={styles.section}
+      wide={wideScreenContent}
+    />
+    : null
+  );
 
   return (
     <ThemeView style={[styles.container, style]}>
       <QuickAccessIcon onPress={() => {}} />
-      <View style={styles.sectionsContainer}>
-        <View style={styles.sectionContainer}>
-          <NavSection
-            style={styles.section}
-            topic="characters"
-          >
-            <NavButton page={tempPages[0]} onPress={handlePress} />
-            <NavButton page={tempPages[1]} onPress={handlePress} />
-            <NavButton page={tempPages[2]} onPress={handlePress} />
-          </NavSection>
-        </View>
-        <View style={styles.sectionContainer}>
-          <NavSection
-            style={styles.section}
-            topic="equipment"
-          >
-            <NavButton page={tempPages[3]} onPress={handlePress} />
-            <NavButton page={tempPages[4]} onPress={handlePress} />
-            <NavButton page={tempPages[5]} onPress={handlePress} />
-          </NavSection>
-        </View>
+      <View style={styles.menuContainer}>
+        {routeSet && routeSet.subsets && routeSet.subsets.length > 0 
+        ? wideScreenContent 
+          ? menuSectionsContent
+          : <Collapsible
+              style={styles.menu}
+              childrenStyle={[styles.menuCollapsibleContent, { backgroundColor, borderColor }]}
+              topic="general"
+              header={<ThemeText type="subheader" topic="general">Menu</ThemeText>}
+              defaultOpen={false}
+              navHeader={true}
+              centerHeader={true}
+              externalControl={true}
+              isOpen={menuOpen}
+              requestOpen={() => { setMenuOpen(true); }}
+              requestClose={() => { setMenuOpen(false); }}
+              decoupleContent={true}
+            >
+              {menuSectionsContent}
+            </Collapsible>
+        : <ThemeText type="subheader" topic="general">One moment...</ThemeText>}
       </View>
+      <QuickAccessIcon onPress={() => {}} />
     </ThemeView>
   );
 }
@@ -93,21 +68,45 @@ export default function NavMenu({ style }: NavMenuProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    justifyContent: "space-between",
     gap: 10,
   },
-  sectionsContainer: {
+  menuContainer: {
+    flex: 1,
+    height: "100%",
     flexDirection: "row",
-    height: "100%",
-  },
-  sectionContainer: {
-    minWidth: 150,
-    height: "100%",
+    justifyContent: "center",
     alignItems: "center",
   },
-  section: {
+  menu: {
     position: "absolute",
     width: "100%",
     top: 0,
-    zIndex: 901,
+    zIndex: 11,
+  },
+  menuCollapsibleContent: {
+    position: "absolute",
+    flex: 1,
+    top: 9,
+    width: "100%",
+    padding: 0,
+  },
+  sectionsContainerWide: {
+    flexDirection: "row",
+    height: "100%",
+    gap: 10,
+  },
+  sectionsContainerNarrow: {
+    flex: 1,
+    flexDirection: "column",
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderTopWidth: 2,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+    gap: 5,
+  },
+  section: {
+    zIndex: 11,
   },
 });

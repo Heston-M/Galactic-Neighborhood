@@ -1,0 +1,12 @@
+{
+  "title": "Page Not Found",
+  "topic": "general",
+  "route": "/not-found",
+  "sections": 
+  [
+    {
+      "type": "text",
+      "text": "Seems like something went wrong. Try reloading the page or navigating to a different page. If the problem persists, please contact me."
+    }
+  ]
+}

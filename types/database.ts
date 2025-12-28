@@ -1,4 +1,5 @@
 import { JsonPage } from './page';
+import { Route } from './route';
 
 /**
  * Database table row types for all page tables
@@ -9,30 +10,40 @@ export interface CharacterOptionPage {
   id: number;
   name: string;
   data: JsonPage;
+  route: Route;
+  notice?: string;
 }
 
 export interface EquipmentPage {
   id: number;
   name: string;
   data: JsonPage;
+  route: Route;
+  notice?: string;
 }
 
 export interface GeneralPage {
   id: number;
   name: string;
   data: JsonPage;
+  route: Route;
+  notice?: string;
 }
 
 export interface MagicPage {
   id: number;
   name: string;
   data: JsonPage;
+  route: Route;
+  notice?: string;
 }
 
 export interface RulesPage {
   id: number;
   name: string;
   data: JsonPage;
+  route: Route;
+  notice?: string;
 }
 
 /**
