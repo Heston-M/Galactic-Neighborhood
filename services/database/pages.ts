@@ -1,6 +1,7 @@
+import defaultPage from '@/constants/defaultPage.json';
 import { supabase } from '@/lib/supabase/client';
 import { PageTableName } from '@/types/database';
-import { JsonPage } from '@/types/page';
+import { JsonPage, pageTableMap } from '@/types/page';
 
 /**
  * Error class for page-related API errors
@@ -20,7 +21,7 @@ export class PageFetchError extends Error {
 /**
  * Fetches a page from the specified table
  * 
- * @param tableName - The name of the table to query
+ * @param tableName - The name of the table to query, if not provided, all page tables will be searched
  * @param pageName - The unique name of the page to fetch
  * @returns Promise that resolves to the JsonPage data
  * @throws PageFetchError if the page is not found or an error occurs
@@ -31,9 +32,18 @@ export class PageFetchError extends Error {
  * ```
  */
 export async function getPageByName(
-  tableName: PageTableName,
-  pageName: string
+  pageName: string,
+  tableName?: PageTableName
 ): Promise<JsonPage> {
+  if (!tableName) {
+    for (const tableName of Object.values(pageTableMap)) {
+      const page = await getPageByName(pageName, tableName);
+      if (page) {
+        return page;
+      }
+    }
+    return defaultPage as JsonPage;
+  }
   try {
     const { data, error } = await supabase
       .from(tableName)

@@ -1,11 +1,6 @@
-import { pageTableMap } from "@/types/page";
+import { pageTableMap, ReactNodePage } from "@/types/page";
+import { Route } from "@/types/route";
 import { Topic } from "@/types/topic";
-
-export type Route = {
-  topic: Topic;
-  subtopic?: string;
-  pageName: string;
-}
 
 /**
  * Parse a route string into a Route object
@@ -25,7 +20,20 @@ export const parseRoute = (route: string) => {
   const topic = routeParts[0] as Topic;
   const subtopic = length > 2 ? routeParts[1] : undefined;
   const pageName = length > 2 ? routeParts[2] : routeParts[1];
-  return { topic, subtopic, pageName } as Route;
+
+  const parsedRoute: Route = { topic, subtopic, pageName };
+  if (!isValidRoute(parsedRoute)) {
+    return null;
+  }
+  return parsedRoute;
+}
+
+export const parseRouteFromPage = (page: ReactNodePage) => {
+  const parsedRoute: Route = { topic: page.topic, pageName: page.title };
+  if (!isValidRoute(parsedRoute)) {
+    return null;
+  }
+  return parsedRoute;
 }
 
 /**
