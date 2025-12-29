@@ -42,3 +42,11 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Parser outputs and credentials
+parser/*.json
+!parser/config.ts
+*.json.key
+credentials.json
+service-account-key.json
+parsed-pages.json
