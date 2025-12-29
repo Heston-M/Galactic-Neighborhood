@@ -10,9 +10,10 @@ import { StyleSheet, View } from "react-native";
 
 interface PageRendererProps {
   page: JsonPage;
+  expandCollapsibles?: boolean;
 }
 
-export default function PageRenderer({ page }: PageRendererProps) {
+export default function PageRenderer({ page, expandCollapsibles = true }: PageRendererProps) {
   const [containerWidth, setContainerWidth] = useState(0);
 
   // Title component
@@ -29,6 +30,7 @@ export default function PageRenderer({ page }: PageRendererProps) {
     const [tableDimensions, setTableDimensions] = useState<Map<string, { width: number, height: number }>>(new Map());
 
     let keys = new Map<string, number>();
+    let indentNextParagraph = false;
 
     // Iterate through each section and create the appropriate content for each type of section.
     let content: React.ReactNode[] = [];
@@ -44,6 +46,7 @@ export default function PageRenderer({ page }: PageRendererProps) {
             key={key} 
             topic={page.topic} 
             header={collapsibleHeader}
+            defaultOpen={expandCollapsibles}
             style={{ width: containerWidth }}
             childrenStyle={{ gap: 10 }}
           >
@@ -70,7 +73,7 @@ export default function PageRenderer({ page }: PageRendererProps) {
 
       switch (section.type) {
         case "text":
-          content.push(<ThemeText key={key} type="default">{section.text}</ThemeText>);
+          content.push(<ThemeText key={key} type="default" indent={indentNextParagraph} parseMarkdown={true}>{section.text}</ThemeText>);
           break;
         case "heading":
           if (section.headingLevel === 1) {
@@ -137,6 +140,7 @@ export default function PageRenderer({ page }: PageRendererProps) {
         default:
           break;
       }
+      indentNextParagraph = section.type === "text";
     }
     addSection();
     return sectionNodes;
@@ -167,6 +171,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     justifyContent: "flex-start",
     alignItems: "flex-start",
+    gap: 10,
   },
   tableContainer: {
     justifyContent: "center",
