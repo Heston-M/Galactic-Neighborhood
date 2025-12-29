@@ -1,6 +1,5 @@
-import { ReactNodePage } from "@/types/page";
+import { useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import ThemeText from "../general/ThemeText";
 import ThemeView from "../general/ThemeView";
 import NavButton from "./NavButton";
 import NavSection from "./NavSection";
@@ -10,55 +9,22 @@ interface NavMenuProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const tempPages: ReactNodePage[] = [
-  {
-    title: "Character 1",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Character 2",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Character 3",
-    topic: "characters",
-    route: "/characters",
-    snippet: <ThemeText>Characters</ThemeText>,
-    content: <ThemeText>Characters content</ThemeText>,
-  },
-  {
-    title: "Equipment 1",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
-  {
-    title: "Equipment 2 w/ long title",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
-  {
-    title: "Equipment 3",
-    topic: "equipment",
-    route: "/equipment",
-    snippet: <ThemeText>Equipment</ThemeText>,
-    content: <ThemeText>Equipment content</ThemeText>,
-  },
+const tempRoutes: string[] = [
+  "/characters/backgrounds",
+  "/characters/enhancement",
+  "/characters/equipment",
+  "/characters/skills",
+  "/equipment/enhancement",
+  "/equipment/equipment",
+  "/equipment/skills",
 ];
 
 export default function NavMenu({ style }: NavMenuProps) {
 
-  const handlePress = (page: ReactNodePage) => {
-    console.log(page.title + " pressed");
+  const [sectionForceToggle, setSectionForceToggle] = useState<{[key: string]: number}>({});
+
+  const handleForceToggle = (topic: string) => {
+    setSectionForceToggle({ ...sectionForceToggle, [topic]: (sectionForceToggle[topic] ?? 0) + 1 });
   }
 
   return (
@@ -67,22 +33,25 @@ export default function NavMenu({ style }: NavMenuProps) {
       <View style={styles.sectionsContainer}>
         <View style={styles.sectionContainer}>
           <NavSection
+            forceToggle={sectionForceToggle["characters"]}
             style={styles.section}
             topic="characters"
           >
-            <NavButton page={tempPages[0]} onPress={handlePress} />
-            <NavButton page={tempPages[1]} onPress={handlePress} />
-            <NavButton page={tempPages[2]} onPress={handlePress} />
+            <NavButton route={tempRoutes[0]} onPress={() => { handleForceToggle("characters"); }} />
+            <NavButton route={tempRoutes[1]} onPress={() => { handleForceToggle("characters"); }} />
+            <NavButton route={tempRoutes[2]} onPress={() => { handleForceToggle("characters"); }} />
+            <NavButton route={tempRoutes[3]} onPress={() => { handleForceToggle("characters"); }} />
           </NavSection>
         </View>
         <View style={styles.sectionContainer}>
           <NavSection
+            forceToggle={sectionForceToggle["equipment"]}
             style={styles.section}
             topic="equipment"
           >
-            <NavButton page={tempPages[3]} onPress={handlePress} />
-            <NavButton page={tempPages[4]} onPress={handlePress} />
-            <NavButton page={tempPages[5]} onPress={handlePress} />
+            <NavButton route={tempRoutes[4]} onPress={() => { handleForceToggle("equipment"); }} />
+            <NavButton route={tempRoutes[5]} onPress={() => { handleForceToggle("equipment"); }} />
+            <NavButton route={tempRoutes[6]} onPress={() => { handleForceToggle("equipment"); }} />
           </NavSection>
         </View>
       </View>

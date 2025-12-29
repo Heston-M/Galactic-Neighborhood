@@ -1,6 +1,6 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { Topic } from "@/types/topic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LayoutChangeEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import ThemeText from "../general/ThemeText";
@@ -9,13 +9,25 @@ interface CollapsibleProps {
   topic: Topic;
   header: React.ReactNode;
   defaultOpen?: boolean;
+  forceToggle?: number;
   flipHeaderOrder?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   childrenStyle?: StyleProp<ViewStyle>;
 }
 
-export default function Collapsible({ topic, header, defaultOpen = true, flipHeaderOrder = false, style, children, childrenStyle = {} }: CollapsibleProps) {
+export default function Collapsible(
+  { 
+    topic, 
+    header, 
+    defaultOpen = true, 
+    forceToggle, 
+    flipHeaderOrder = false, 
+    style, 
+    children, 
+    childrenStyle = {},
+  }: CollapsibleProps) {
+    
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isHovering, setIsHovering] = useState(false);
   const [titleWidth, setTitleWidth] = useState(0);
@@ -55,6 +67,12 @@ export default function Collapsible({ topic, header, defaultOpen = true, flipHea
       width.value = measuredWidth;
     }
   };
+
+  useEffect(() => {
+    if (forceToggle !== undefined) {
+      toggle();
+    }
+  }, [forceToggle]);
 
   const toggle = () => {
     const toOpen = !isOpen;
@@ -118,7 +136,11 @@ export default function Collapsible({ topic, header, defaultOpen = true, flipHea
         </Animated.View>
       </Pressable>
       <Animated.View style={[animatedContentStyle]}>
-        <View onLayout={handleLayout} style={[styles.contentContainer, childrenStyle]}>
+        <View 
+          onLayout={handleLayout} 
+          style={[styles.contentContainer, childrenStyle]}
+          pointerEvents={isOpen ? "auto" : "none"}
+        >
           {children}
         </View>
       </Animated.View>
