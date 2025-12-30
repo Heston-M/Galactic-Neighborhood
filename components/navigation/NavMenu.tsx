@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import ThemeView from "../general/ThemeView";
 import NavButton from "./NavButton";
@@ -6,26 +6,40 @@ import NavSection from "./NavSection";
 import QuickAccessIcon from "./QuickAccessIcon";
 
 interface NavMenuProps {
+  setCloseMenu: number;
   style?: StyleProp<ViewStyle>;
+  onMenuOpen: () => void;
 }
 
-const tempRoutes: string[] = [
+const tempCharactersRoutes: string[] = [
   "/characters/backgrounds",
   "/characters/enhancement",
   "/characters/equipment",
   "/characters/skills",
+];
+
+const tempEquipmentRoutes: string[] = [
   "/equipment/enhancement",
   "/equipment/equipment",
   "/equipment/skills",
 ];
 
-export default function NavMenu({ style }: NavMenuProps) {
+const tempMagicRoutes: string[] = [
+  "/magic/magic",
+  "/magic/skills",
+];
 
-  const [sectionForceToggle, setSectionForceToggle] = useState<{[key: string]: number}>({});
+const tempRulesRoutes: string[] = [
+  "/rules/rules",
+  "/rules/skills",
+];
 
-  const handleForceToggle = (topic: string) => {
-    setSectionForceToggle({ ...sectionForceToggle, [topic]: (sectionForceToggle[topic] ?? 0) + 1 });
-  }
+export default function NavMenu({ setCloseMenu, style, onMenuOpen }: NavMenuProps) {
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOpenSection(prev => null);
+  }, [setCloseMenu]);
 
   return (
     <ThemeView style={[styles.container, style]}>
@@ -33,28 +47,58 @@ export default function NavMenu({ style }: NavMenuProps) {
       <View style={styles.sectionsContainer}>
         <View style={styles.sectionContainer}>
           <NavSection
-            forceToggle={sectionForceToggle["characters"]}
             style={styles.section}
             topic="characters"
+            isOpen={openSection === "characters"}
+            onOpen={() => { setOpenSection("characters"); onMenuOpen(); }}
+            onClose={() => { setOpenSection(null); }}
           >
-            <NavButton route={tempRoutes[0]} onPress={() => { handleForceToggle("characters"); }} />
-            <NavButton route={tempRoutes[1]} onPress={() => { handleForceToggle("characters"); }} />
-            <NavButton route={tempRoutes[2]} onPress={() => { handleForceToggle("characters"); }} />
-            <NavButton route={tempRoutes[3]} onPress={() => { handleForceToggle("characters"); }} />
+            {tempCharactersRoutes.map((route) => (
+              <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
+            ))}
           </NavSection>
         </View>
         <View style={styles.sectionContainer}>
           <NavSection
-            forceToggle={sectionForceToggle["equipment"]}
             style={styles.section}
             topic="equipment"
+            isOpen={openSection === "equipment"}
+            onOpen={() => { setOpenSection("equipment"); onMenuOpen(); }}
+            onClose={() => { setOpenSection(null); }}
           >
-            <NavButton route={tempRoutes[4]} onPress={() => { handleForceToggle("equipment"); }} />
-            <NavButton route={tempRoutes[5]} onPress={() => { handleForceToggle("equipment"); }} />
-            <NavButton route={tempRoutes[6]} onPress={() => { handleForceToggle("equipment"); }} />
+            {tempEquipmentRoutes.map((route) => (
+              <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
+            ))}
+          </NavSection>
+        </View>
+        <View style={styles.sectionContainer}>
+          <NavSection
+            style={styles.section}
+            topic="magic"
+            isOpen={openSection === "magic"}
+            onOpen={() => { setOpenSection("magic"); onMenuOpen(); }}
+            onClose={() => { setOpenSection(null); }}
+          >
+            {tempMagicRoutes.map((route) => (
+              <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
+            ))}
+          </NavSection>
+        </View>
+        <View style={styles.sectionContainer}>
+          <NavSection
+            style={styles.section}
+            topic="rules"
+            isOpen={openSection === "rules"}
+            onOpen={() => { setOpenSection("rules"); onMenuOpen(); }}
+            onClose={() => { setOpenSection(null); }}
+          >
+            {tempRulesRoutes.map((route) => (
+              <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
+            ))}
           </NavSection>
         </View>
       </View>
+      <QuickAccessIcon onPress={() => {}} />
     </ThemeView>
   );
 }
@@ -62,6 +106,7 @@ export default function NavMenu({ style }: NavMenuProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    justifyContent: "space-between",
     gap: 10,
   },
   sectionsContainer: {
@@ -77,6 +122,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     top: 0,
-    zIndex: 901,
+    zIndex: 11,
   },
 });

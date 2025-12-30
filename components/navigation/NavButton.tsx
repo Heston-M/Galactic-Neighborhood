@@ -13,13 +13,21 @@ export default function NavButton({ route, onPress }: NavButtonProps) {
   if (!parsedRoute) {
     return null;
   }
+  const text = parsedRoute.pageName.charAt(0).toUpperCase() + parsedRoute.pageName.slice(1);
   const { getThemeColor } = useThemeContext();
   const backgroundColor = getThemeColor("shade", parsedRoute.topic);
   const borderColor = getThemeColor("secondary");
 
   return (
     <Pressable style={[styles.button, { backgroundColor, borderColor }]}>
-      <NavLink style={styles.link} route={route} colorByTopic={false} usePreview={false} onPress={onPress} />
+      <NavLink 
+        style={styles.link} 
+        route={route} 
+        text={text}
+        colorByTopic={false} 
+        usePreview={false} 
+        onPress={onPress} 
+      />
     </Pressable>
   );
 }

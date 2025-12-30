@@ -1,6 +1,6 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { Topic } from "@/types/topic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LayoutChangeEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import ThemeText from "../general/ThemeText";
@@ -9,11 +9,15 @@ interface CollapsibleProps {
   topic: Topic;
   header: React.ReactNode;
   defaultOpen?: boolean;
-  forceToggle?: number;
   flipHeaderOrder?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   childrenStyle?: StyleProp<ViewStyle>;
+  externalControl?: boolean;
+  setOpen?: number;
+  setClose?: number;
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 export default function Collapsible(
@@ -21,18 +25,22 @@ export default function Collapsible(
     topic, 
     header, 
     defaultOpen = true, 
-    forceToggle, 
     flipHeaderOrder = false, 
     style, 
     children, 
     childrenStyle = {},
+    externalControl = false,
+    setOpen,
+    setClose,
+    onOpen,
+    onClose,
   }: CollapsibleProps) {
     
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [isHovering, setIsHovering] = useState(false);
-  const [titleWidth, setTitleWidth] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [contentWidth, setContentWidth] = useState(0);
+  const [isOpen, setIsOpen] = useState<boolean>(defaultOpen);
+  const [isHovering, setIsHovering] = useState<boolean>(false);
+  const [titleWidth, setTitleWidth] = useState<number>(0);
+  const [contentHeight, setContentHeight] = useState<number>(0);
+  const [contentWidth, setContentWidth] = useState<number>(0);
 
   const { getThemeColor } = useThemeContext();
   const flattenedStyle = style ? StyleSheet.flatten(style) : null;
@@ -68,11 +76,16 @@ export default function Collapsible(
     }
   };
 
-  useEffect(() => {
-    if (forceToggle !== undefined) {
-      toggle();
+  const handleTouch = () => {
+    const toOpen = toggle();
+    if (externalControl) {
+      if (toOpen) {
+        onOpen?.();
+      } else {
+        onClose?.();
+      }
     }
-  }, [forceToggle]);
+  }
 
   const toggle = () => {
     const toOpen = !isOpen;
@@ -99,7 +112,28 @@ export default function Collapsible(
         easing: Easing.ease,
       }
     );
+    return toOpen;
   }
+
+  const prevSetOpenRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (externalControl && setOpen !== undefined) {
+      if (prevSetOpenRef.current !== undefined && prevSetOpenRef.current < setOpen && !isOpen) {
+        toggle();
+      }
+      prevSetOpenRef.current = setOpen;
+    }
+  }, [setOpen, externalControl, isOpen]);
+
+  const prevSetCloseRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (externalControl && setClose !== undefined) {
+      if (prevSetCloseRef.current !== undefined && prevSetCloseRef.current < setClose && isOpen) {
+        toggle();
+      }
+      prevSetCloseRef.current = setClose;
+    }
+  }, [setClose, externalControl, isOpen]);
 
   const animatedTitleBarStyle = useAnimatedStyle(() => ({
     width: width.value,
@@ -117,7 +151,7 @@ export default function Collapsible(
     <Animated.View style={[style, { backgroundColor }]}>
       <Pressable 
         style={[styles.titleContainer, { backgroundColor: isHovering ? accentColor : backgroundColor }]}
-        onPress={toggle}
+        onPress={handleTouch}
         onHoverIn={() => { setIsHovering(true); }}
         onHoverOut={() => { setIsHovering(false); }}
       >
