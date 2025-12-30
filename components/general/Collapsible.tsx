@@ -10,6 +10,7 @@ interface CollapsibleProps {
   header: React.ReactNode;
   defaultOpen?: boolean;
   flipHeaderOrder?: boolean;
+  centerHeader?: boolean;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   childrenStyle?: StyleProp<ViewStyle>;
@@ -26,6 +27,7 @@ export default function Collapsible(
     header, 
     defaultOpen = true, 
     flipHeaderOrder = false, 
+    centerHeader = false,
     style, 
     children, 
     childrenStyle = {},
@@ -53,7 +55,7 @@ export default function Collapsible(
   const opacity = useSharedValue(defaultOpen ? 1 : 0);
 
   const handleTitleLayout = (event: LayoutChangeEvent) => {
-    const measuredWidth = event.nativeEvent.layout.width + 10;
+    const measuredWidth = event.nativeEvent.layout.width + (centerHeader ? 42 : 10);
     if (titleWidth === undefined || titleWidth === 0) {
       setTitleWidth(measuredWidth);
     }
@@ -99,7 +101,7 @@ export default function Collapsible(
       }
     );
     width.value = withTiming(
-      toOpen ? contentWidth + 1 : flipHeaderOrder ? 32 : titleWidth, 
+      toOpen ? contentWidth : titleWidth, 
       { 
         duration: 300,
         easing: Easing.ease,
@@ -137,6 +139,7 @@ export default function Collapsible(
 
   const animatedTitleBarStyle = useAnimatedStyle(() => ({
     width: width.value,
+    alignSelf: centerHeader ? "center" : "flex-start",
     borderBottomWidth: 2,
     borderColor,
     zIndex: 902,
@@ -147,27 +150,40 @@ export default function Collapsible(
     opacity: opacity.value,
   }));
 
+  const icon = <ThemeText type="default" style={styles.icon}>{isOpen ? "▲" : "▼"}</ThemeText>
+
   return (
     <Animated.View style={[style, { backgroundColor }]}>
       <Pressable 
-        style={[styles.titleContainer, { backgroundColor: isHovering ? accentColor : backgroundColor }]}
+        style={[
+          styles.titleContainer, 
+          { backgroundColor: isHovering ? accentColor : backgroundColor 
+            , borderBottomLeftRadius: isOpen ? 0 : centerHeader ? 10 : 0
+            , borderBottomRightRadius: isOpen ? 0 : 10
+            , paddingHorizontal: centerHeader ? 5 : 0
+          }]}
         onPress={handleTouch}
         onHoverIn={() => { setIsHovering(true); }}
         onHoverOut={() => { setIsHovering(false); }}
+        onTouchStart={() => { setIsHovering(true); }}
+        onTouchEnd={() => { setIsHovering(false); }}
+        onTouchCancel={() => { setIsHovering(false); }}
       >
-        <Animated.View style={[styles.title, animatedTitleBarStyle]}> 
-          {flipHeaderOrder ? (<>
-              <View onLayout={handleTitleLayout}>
-                <ThemeText type="default" style={styles.icon}>{isOpen ? "▲" : "▼"}</ThemeText>
-              </View>
+        {centerHeader 
+         ? (<View style={[styles.title, { justifyContent: "center", paddingLeft: centerHeader ? 0 : 5 }]}>
+            {flipHeaderOrder && icon}
+            <View onLayout={handleTitleLayout}>
               {header}
-          </>) : (<>
-              <View onLayout={handleTitleLayout}>
-                {header}
-              </View>
-              <ThemeText type="default" style={styles.icon}>{isOpen ? "▲" : "▼"}</ThemeText>
-          </>)}
-        </Animated.View>
+            </View>
+            {!flipHeaderOrder && icon}
+          </View>)
+         : (<View style={[styles.title, { justifyContent: "flex-start", paddingLeft: centerHeader ? 0 : 5 }]}>
+            <View onLayout={handleTitleLayout}>
+              {flipHeaderOrder ? icon : header}
+            </View>
+            {flipHeaderOrder ? header : icon}
+          </View>)}
+        <Animated.View style={animatedTitleBarStyle} /> 
       </Pressable>
       <Animated.View style={[animatedContentStyle]}>
         <View 
@@ -184,14 +200,13 @@ export default function Collapsible(
 
 const styles = StyleSheet.create({
   titleContainer: {
-    borderRadius: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   title: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
     gap: 10,
-    paddingLeft: 5,
   },
   icon: {
     fontSize: 16,

@@ -7,6 +7,7 @@ import ThemeText from "../general/ThemeText";
 interface NavSectionProps {
   topic: Topic;
   header?: React.ReactNode;
+  centerHeader?: boolean;
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface NavSectionProps {
   onClose: () => void;
 }
 
-export default function NavSection({ topic, header, children, style, isOpen, onOpen, onClose }: NavSectionProps) {
+export default function NavSection({ topic, header, centerHeader = false, children, style, isOpen, onOpen, onClose }: NavSectionProps) {
   const [collapsibleSetOpen, setCollapsibleSetOpen] = useState(0);
   const [collapsibleSetClose, setCollapsibleSetClose] = useState(0);
   const prevIsOpenRef = useRef<boolean | undefined>(undefined);
@@ -42,6 +43,7 @@ export default function NavSection({ topic, header, children, style, isOpen, onO
       header={header ?? <ThemeText type="subheader" topic={topic}>{topic.charAt(0).toUpperCase() + topic.slice(1)}</ThemeText>} 
       defaultOpen={isOpen} 
       flipHeaderOrder={true} 
+      centerHeader={centerHeader}
       style={style} 
       childrenStyle={styles.contentContainer}
       externalControl={true}
