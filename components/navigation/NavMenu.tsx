@@ -1,4 +1,6 @@
+import { useNavContext } from "@/contexts/NavContext";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { Topic } from "@/types/topic";
 import { useEffect, useState } from "react";
 import { StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle } from "react-native";
 import ThemeText from "../general/ThemeText";
@@ -51,6 +53,8 @@ export default function NavMenu({ setCloseMenu, style, onMenuOpen }: NavMenuProp
   const { getThemeColor } = useThemeContext();
   const borderColor = getThemeColor("secondary");
 
+  const { routeSet } = useNavContext();
+
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
 
@@ -59,62 +63,39 @@ export default function NavMenu({ setCloseMenu, style, onMenuOpen }: NavMenuProp
     setMenuOpen(false);
   }, [setCloseMenu]);
 
-  const menuSectionsContent = (
-    <View style={wideScreenContent ? styles.sectionsContainerWide : [styles.sectionsContainerNarrow, { borderColor }]}>
-      <View style={{ minWidth: wideScreenContent ? sectionWidths.characters : undefined }}>
+  const menuSectionsContent = routeSet && routeSet.subsets && routeSet.subsets.length > 0 ? (
+    <View style={wideScreenContent 
+      ? styles.sectionsContainerWide
+      : [styles.sectionsContainerNarrow, { borderColor }]}>
+      {routeSet.subsets.map((topic) => (
         <NavSection
           style={styles.section}
-          topic="characters"
-          isOpen={openSection === "characters"}
-          onOpen={() => { setOpenSection("characters"); onMenuOpen(); }}
+          key={topic.name}
+          topic={topic.name as Topic}
+          isOpen={openSection === topic.name}
+          onOpen={() => { setOpenSection(topic.name); onMenuOpen(); }}
           onClose={() => { setOpenSection(null); }}
         >
-          {tempCharactersRoutes.map((route) => (
-            <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
+          {/* { topic.subsets && topic.subsets.length > 0 && topic.subsets.map((subset) => (
+            <NavSection
+              key={subset.name}
+              topic={topic.name as Topic}
+              isOpen={openSection === subset.name}
+              onOpen={() => { setOpenSection(subset.name); onMenuOpen(); }}
+              onClose={() => { setOpenSection(null); }}
+            >
+              {subset.routes && subset.routes.length > 0 && subset.routes.map((route) => (
+                <NavButton key={route.pageName} route={route.pageName} onPress={() => { setOpenSection(null); }} />
+              ))}
+            </NavSection>
+          ))} */}
+          {topic.routes && topic.routes.length > 0 && topic.routes.map((route) => (
+            <NavButton key={route.pageName} route={route} onPress={() => { setOpenSection(null); }} />
           ))}
         </NavSection>
-      </View>
-      <View style={{ minWidth: wideScreenContent ? sectionWidths.equipment : undefined }}>
-        <NavSection
-          style={styles.section}
-          topic="equipment"
-          isOpen={openSection === "equipment"}
-          onOpen={() => { setOpenSection("equipment"); onMenuOpen(); }}
-          onClose={() => { setOpenSection(null); }}
-        >
-          {tempEquipmentRoutes.map((route) => (
-            <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
-          ))}
-        </NavSection>
-      </View>
-      <View style={{ minWidth: wideScreenContent ? sectionWidths.magic : undefined }}>
-        <NavSection
-          style={styles.section}
-          topic="magic"
-          isOpen={openSection === "magic"}
-          onOpen={() => { setOpenSection("magic"); onMenuOpen(); }}
-          onClose={() => { setOpenSection(null); }}
-        >
-          {tempMagicRoutes.map((route) => (
-            <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
-          ))}
-        </NavSection>
-      </View>
-      <View style={{ minWidth: wideScreenContent ? sectionWidths.rules : undefined }}>
-        <NavSection
-          style={styles.section}
-          topic="rules"
-          isOpen={openSection === "rules"}
-          onOpen={() => { setOpenSection("rules"); onMenuOpen(); }}
-          onClose={() => { setOpenSection(null); }}
-        >
-          {tempRulesRoutes.map((route) => (
-            <NavButton key={route} route={route} onPress={() => { setOpenSection(null); }} />
-          ))}
-        </NavSection>
-      </View>
+      ))}  
     </View>
-  );
+  ) : <ThemeText type="subheader" topic="general">One moment...</ThemeText>;
 
   return (
     <ThemeView style={[styles.container, style]}>
@@ -161,6 +142,7 @@ const styles = StyleSheet.create({
   sectionsContainerWide: {
     flexDirection: "row",
     height: "100%",
+    gap: 10,
   },
   sectionsContainerNarrow: {
     flex: 1,
@@ -173,7 +155,6 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   section: {
-    flex: 1,
     zIndex: 11,
   },
 });

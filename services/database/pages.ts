@@ -271,6 +271,9 @@ export async function getAllPageRoutes(): Promise<RouteSet> {
         error
       );
     }
+    if (!data) {
+      continue;
+    }
     const topicSet = routeTopicSetHelper(data, topic);
     routes.subsets!.push(topicSet);
   }

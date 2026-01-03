@@ -1,12 +1,12 @@
 import { useNavContext } from "@/contexts/NavContext";
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { parseRoute } from "@/utils/routeParsing";
+import { Route } from "@/types/route";
 import { useState } from "react";
 import { Pressable, StyleProp, TextStyle } from "react-native";
 import ThemeText from "../general/ThemeText";
 
 interface NavLinkProps {
-  route: string;
+  route: Route;
   text?: string;
   style?: StyleProp<TextStyle>;
   colorByTopic?: boolean;
@@ -16,11 +16,10 @@ interface NavLinkProps {
 
 export default function NavLink({ route, text, style, colorByTopic = true, usePreview = true, onPress }: NavLinkProps) {
   const [hover, setHover] = useState(false);
-  const parsedRoute = parseRoute(route);
 
   const { getThemeColor } = useThemeContext();
-  const textColor = getThemeColor("text" , colorByTopic ? parsedRoute?.topic : undefined);
-  const shadeColor = getThemeColor("shade", colorByTopic ? parsedRoute?.topic : undefined);
+  const textColor = getThemeColor("text" , colorByTopic ? route.topic : undefined);
+  const shadeColor = getThemeColor("shade", colorByTopic ? route.topic : undefined);
 
   const { navigateTo } = useNavContext();
 
@@ -29,10 +28,10 @@ export default function NavLink({ route, text, style, colorByTopic = true, usePr
    */
 
   const handlePress = () => {
-    if (!parsedRoute) {
+    if (!route) {
       return;
     }
-    navigateTo(parsedRoute);
+    navigateTo(route);
     onPress?.();
   }
 
@@ -45,7 +44,7 @@ export default function NavLink({ route, text, style, colorByTopic = true, usePr
       onPressOut={() => { setHover(false); }}
     >
       <ThemeText type="default" style={[style, { color: hover ? shadeColor : textColor, fontWeight: "bold", textDecorationLine: hover ? "underline" : "none" }]}>
-        {text ?? parsedRoute?.pageName ?? "Unknown Page"}
+        {text ?? route.pageName}
       </ThemeText>
     </Pressable>
   );
