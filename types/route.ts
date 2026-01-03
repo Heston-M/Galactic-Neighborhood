@@ -5,3 +5,9 @@ export type Route = {
   subtopic?: string;
   pageName: string;
 }
+
+export type RouteSet = {
+  name: string;
+  subsets?: RouteSet[];
+  routes: Route[];
+}

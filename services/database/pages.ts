@@ -2,6 +2,9 @@ import defaultPage from '@/constants/defaultPage.json';
 import { supabase } from '@/lib/supabase/client';
 import { PageTableName } from '@/types/database';
 import { JsonPage, pageTableMap } from '@/types/page';
+import { RouteSet } from '@/types/route';
+import { parseRoute } from '@/utils/routeParsing';
+
 
 /**
  * Error class for page-related API errors
@@ -220,3 +223,56 @@ export async function getAllPages(
   }
 }
 
+/**
+ * Recursive helper function to build a RouteSet object from an array of data
+ * @param data - The array of data to build the RouteSet object from
+ * @returns The RouteSet object
+ */
+function routeTopicSetHelper(data: any[], name: string): RouteSet {
+  const topicSet: RouteSet = { name, subsets: [], routes: [] };
+  for (const row of data) {
+    if (row.route && row.name) {
+      const route = parseRoute(row.route);
+      if (route) {
+        if (route.subtopic) {
+          if (!topicSet.subsets) {
+            topicSet.subsets = [];
+          }
+          const subTopicData = data.filter(row => row.route && row.name && row.route.includes(route.subtopic));
+          topicSet.subsets.push(routeTopicSetHelper(subTopicData, route.subtopic));
+        } else {
+          topicSet.routes.push(route);
+        }
+      }
+    }
+  }
+  if (topicSet.subsets && topicSet.subsets.length > 0) {
+    topicSet.subsets = topicSet.subsets.filter(subset => subset.routes.length > 0 || subset.subsets!.length > 0);
+  }
+  return topicSet;
+}
+/**
+ * Fetches all page routes from all page tables
+ * 
+ * @returns Promise that resolves to a RouteSet object containing all page routes
+ */
+export async function getAllPageRoutes(): Promise<RouteSet> {
+  const routes: RouteSet = { name: 'all', subsets: [], routes: [] };
+  for (const topic of Object.keys(pageTableMap)) {
+    const tableName = pageTableMap[topic as keyof typeof pageTableMap];
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('route, name');
+    if (error) {
+      throw new PageFetchError(
+        `Failed to fetch all page routes from "${tableName}": ${error.message}`,
+        tableName,
+        'all',
+        error
+      );
+    }
+    const topicSet = routeTopicSetHelper(data, topic);
+    routes.subsets!.push(topicSet);
+  }
+  return routes;
+}

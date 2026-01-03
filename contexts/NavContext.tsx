@@ -1,7 +1,7 @@
 import defaultPage from "@/constants/defaultPage.json";
-import { getPageByName as getPageByNameService } from "@/services/database/pages";
+import { getAllPageRoutes, getPageByName as getPageByNameService } from "@/services/database/pages";
 import { JsonPage, pageTableMap } from "@/types/page";
-import { Route } from "@/types/route";
+import { Route, RouteSet } from "@/types/route";
 import { Topic } from "@/types/topic";
 import { isValidRoute, parseRoute } from "@/utils/routeParsing";
 import { RelativePathString, router, usePathname } from "expo-router";
@@ -11,6 +11,7 @@ type NavContextShape = {
   currentPage: JsonPage;
   topic: Topic;
   loading: boolean;
+  routeSet?: RouteSet;
   navigateTo: (route: string | Route) => void;
 }
 
@@ -24,6 +25,19 @@ export default function NavContextProvider({ children }: { children: React.React
 
   const [currentPage, setCurrentPage] = useState<JsonPage>(defaultPage as JsonPage);
   const [loading, setLoading] = useState(false);
+  const [routeSet, setRouteSet] = useState<RouteSet>();
+
+  useEffect(() => {
+    const fetchRouteSet = async () => {
+      try {
+        const routeSet = await getAllPageRoutes();
+        setRouteSet(routeSet);
+      } catch (error) {
+        console.error('Error fetching route set:', error);
+      }
+    }
+    fetchRouteSet();
+  }, []);
 
   const navigateTo = (route: string | Route) => {
     const parsedRoute = typeof route === 'string' ? parseRoute(route) : route;
@@ -75,7 +89,7 @@ export default function NavContextProvider({ children }: { children: React.React
   }, [topic, pageName]);
 
   return (
-    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, navigateTo }}>
+    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, navigateTo }}>
       {children}
     </NavContext.Provider>
   );
