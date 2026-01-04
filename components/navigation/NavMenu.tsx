@@ -76,19 +76,20 @@ export default function NavMenu({ setCloseMenu, style, onMenuOpen }: NavMenuProp
           onOpen={() => { setOpenSection(topic.name); onMenuOpen(); }}
           onClose={() => { setOpenSection(null); }}
         >
-          {/* { topic.subsets && topic.subsets.length > 0 && topic.subsets.map((subset) => (
-            <NavSection
-              key={subset.name}
-              topic={topic.name as Topic}
-              isOpen={openSection === subset.name}
-              onOpen={() => { setOpenSection(subset.name); onMenuOpen(); }}
-              onClose={() => { setOpenSection(null); }}
-            >
-              {subset.routes && subset.routes.length > 0 && subset.routes.map((route) => (
-                <NavButton key={route.pageName} route={route.pageName} onPress={() => { setOpenSection(null); }} />
-              ))}
-            </NavSection>
-          ))} */}
+          { topic.subsets && topic.subsets.length > 0 && topic.subsets.map((subset) => (
+            <View key={subset.name} style={{ marginLeft: 32 }}>
+              <NavSection
+                topic={topic.name as Topic}
+                isOpen={false}
+                onOpen={() => {}}
+                onClose={() => {}}
+              >
+                {subset.routes && subset.routes.length > 0 && subset.routes.map((route) => (
+                  <NavButton key={route.pageName} route={route} onPress={() => { setOpenSection(null); }} />
+                ))}
+              </NavSection>
+            </View>
+          ))}
           {topic.routes && topic.routes.length > 0 && topic.routes.map((route) => (
             <NavButton key={route.pageName} route={route} onPress={() => { setOpenSection(null); }} />
           ))}

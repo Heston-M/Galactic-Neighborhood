@@ -224,34 +224,6 @@ export async function getAllPages(
 }
 
 /**
- * Recursive helper function to build a RouteSet object from an array of data
- * @param data - The array of data to build the RouteSet object from
- * @returns The RouteSet object
- */
-function routeTopicSetHelper(data: any[], name: string): RouteSet {
-  const topicSet: RouteSet = { name, subsets: [], routes: [] };
-  for (const row of data) {
-    if (row.route && row.name) {
-      const route = parseRoute(row.route);
-      if (route) {
-        if (route.subtopic) {
-          if (!topicSet.subsets) {
-            topicSet.subsets = [];
-          }
-          const subTopicData = data.filter(row => row.route && row.name && row.route.includes(route.subtopic));
-          topicSet.subsets.push(routeTopicSetHelper(subTopicData, route.subtopic));
-        } else {
-          topicSet.routes.push(route);
-        }
-      }
-    }
-  }
-  if (topicSet.subsets && topicSet.subsets.length > 0) {
-    topicSet.subsets = topicSet.subsets.filter(subset => subset.routes.length > 0 || subset.subsets!.length > 0);
-  }
-  return topicSet;
-}
-/**
  * Fetches all page routes from all page tables
  * 
  * @returns Promise that resolves to a RouteSet object containing all page routes
@@ -274,8 +246,46 @@ export async function getAllPageRoutes(): Promise<RouteSet> {
     if (!data) {
       continue;
     }
-    const topicSet = routeTopicSetHelper(data, topic);
-    routes.subsets!.push(topicSet);
+
+    const topicRouteSet: RouteSet = { name: topic, subsets: [], routes: [] };
+
+    const topicRootPage = data.find(row => row.route === `/${topic}`);
+    if (topicRootPage) {
+      topicRouteSet.rootPage = parseRoute(topicRootPage.route) ?? undefined;
+    }
+
+    for (const row of data) {
+      const route = parseRoute(row.route);
+      if (!route) {
+        continue;
+      }
+      if (route.subtopic) {
+        // find or create subset
+        const subset = topicRouteSet.subsets!.find(subset => subset.name === route.subtopic);
+        if (subset) {
+          // add to subset
+          subset.routes.push(route);
+        } else {
+          // create subset
+          const rootPage = topicRouteSet.routes.find(r => r.pageName === route.subtopic);
+          if (rootPage) {
+            // if root page was processed previously, remove it from routes
+            topicRouteSet.routes = topicRouteSet.routes.filter(r => r.pageName !== rootPage.pageName);
+          }
+          topicRouteSet.subsets!.push({ name: route.subtopic, subsets: [], routes: [route], rootPage: rootPage ?? undefined });
+        }
+      } else {
+        // check if page is a root page for an existing subset, or add to routes
+        const subset = topicRouteSet.subsets!.find(subset => subset.name === route.pageName);
+        if (subset) {
+          subset.rootPage = route;
+        } else {
+          topicRouteSet.routes.push(route);
+        }
+      }
+    }
+
+    routes.subsets!.push(topicRouteSet);
   }
   return routes;
 }

@@ -10,12 +10,13 @@ interface NavSectionProps {
   centerHeader?: boolean;
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  childrenStyle?: StyleProp<ViewStyle>;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
 }
 
-export default function NavSection({ topic, header, centerHeader = false, children, style, isOpen, onOpen, onClose }: NavSectionProps) {
+export default function NavSection({ topic, header, centerHeader = false, children, style, childrenStyle, isOpen, onOpen, onClose }: NavSectionProps) {
   const [collapsibleSetOpen, setCollapsibleSetOpen] = useState(0);
   const [collapsibleSetClose, setCollapsibleSetClose] = useState(0);
   const prevIsOpenRef = useRef<boolean | undefined>(undefined);
@@ -40,12 +41,12 @@ export default function NavSection({ topic, header, centerHeader = false, childr
   return (
     <Collapsible 
       topic={topic} 
-      header={header ?? <ThemeText type="subheader" topic={topic}>{topic.charAt(0).toUpperCase() + topic.slice(1)}</ThemeText>} 
+      header={header ?? <ThemeText type="subheader" topic={topic}>{topic.charAt(0).toUpperCase() + topic.slice(1)} </ThemeText>} 
       defaultOpen={isOpen} 
       flipHeaderOrder={true} 
       centerHeader={centerHeader}
       style={style} 
-      childrenStyle={styles.contentContainer}
+      childrenStyle={[styles.contentContainer, childrenStyle]}
       externalControl={true}
       setOpen={collapsibleSetOpen}
       setClose={collapsibleSetClose}

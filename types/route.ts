@@ -8,6 +8,7 @@ export type Route = {
 
 export type RouteSet = {
   name: string;
+  rootPage?: Route;
   subsets?: RouteSet[];
   routes: Route[];
 }
