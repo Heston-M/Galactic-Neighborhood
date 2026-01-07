@@ -1,6 +1,19 @@
 import { pageTableMap, ReactNodePage } from "@/types/page";
-import { Route } from "@/types/route";
+import { Route, RouteSet } from "@/types/route";
 import { Topic } from "@/types/topic";
+
+/**
+ * Find the topic of a route set
+ * @param subset - The route set to find the topic of
+ * @returns The topic of the route set
+ */
+export const findTopic = (subset: RouteSet): Topic => {
+  if (subset.subsets && subset.subsets.length > 0) {
+    return findTopic(subset.subsets[0]);
+  } else {
+    return subset.routes[0].topic;
+  }
+}
 
 /**
  * Parse a route string into a Route object

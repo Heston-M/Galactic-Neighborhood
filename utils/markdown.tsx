@@ -34,3 +34,13 @@ export function parseBoldText(text: string): React.ReactNode {
   return textStr;
 }
 
+/**
+ * Removes dashes and underscores from a text string. Capitalizes the first letter of each word.
+ * 
+ * @param text - The text string to parse
+ * @returns The parsed text string
+ */
+export function parseNameText(text: string): string {
+  return text.replace(/-/g, ' ').replace(/_/g, ' ').trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+

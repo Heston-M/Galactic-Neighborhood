@@ -1,9 +1,9 @@
+import ThemeText from "@/components/general/ThemeText";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { Topic } from "@/types/topic";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { LayoutChangeEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import ThemeText from "../general/ThemeText";
 
 interface CollapsibleProps {
   topic: Topic;
@@ -15,10 +15,9 @@ interface CollapsibleProps {
   children?: React.ReactNode;
   childrenStyle?: StyleProp<ViewStyle>;
   externalControl?: boolean;
-  setOpen?: number;
-  setClose?: number;
-  onOpen?: () => void;
-  onClose?: () => void;
+  isOpen?: boolean;
+  requestOpen?: () => void;
+  requestClose?: () => void;
 }
 
 export default function Collapsible(
@@ -32,13 +31,12 @@ export default function Collapsible(
     children, 
     childrenStyle = {},
     externalControl = false,
-    setOpen,
-    setClose,
-    onOpen,
-    onClose,
+    isOpen,
+    requestOpen,
+    requestClose,
   }: CollapsibleProps) {
     
-  const [isOpen, setIsOpen] = useState<boolean>(defaultOpen);
+  const [internalIsOpen, setInternalIsOpen] = useState<boolean>(isOpen ?? defaultOpen);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [titleWidth, setTitleWidth] = useState<number>(0);
   const [contentHeight, setContentHeight] = useState<number>(0);
@@ -79,19 +77,20 @@ export default function Collapsible(
   };
 
   const handleTouch = () => {
-    const toOpen = toggle();
     if (externalControl) {
-      if (toOpen) {
-        onOpen?.();
+      if (internalIsOpen) {
+        requestClose?.();
       } else {
-        onClose?.();
+        requestOpen?.();
       }
+    } else {
+      toggle();
     }
   }
 
   const toggle = () => {
-    const toOpen = !isOpen;
-    setIsOpen(toOpen);
+    const toOpen = !internalIsOpen;
+    setInternalIsOpen(toOpen);
 
     height.value = withTiming(
       toOpen ? contentHeight : 0, 
@@ -117,25 +116,13 @@ export default function Collapsible(
     return toOpen;
   }
 
-  const prevSetOpenRef = useRef<number | undefined>(undefined);
   useEffect(() => {
-    if (externalControl && setOpen !== undefined) {
-      if (prevSetOpenRef.current !== undefined && prevSetOpenRef.current < setOpen && !isOpen) {
+    if (externalControl && isOpen !== undefined) {
+      if (isOpen !== internalIsOpen) {
         toggle();
       }
-      prevSetOpenRef.current = setOpen;
     }
-  }, [setOpen, externalControl, isOpen]);
-
-  const prevSetCloseRef = useRef<number | undefined>(undefined);
-  useEffect(() => {
-    if (externalControl && setClose !== undefined) {
-      if (prevSetCloseRef.current !== undefined && prevSetCloseRef.current < setClose && isOpen) {
-        toggle();
-      }
-      prevSetCloseRef.current = setClose;
-    }
-  }, [setClose, externalControl, isOpen]);
+  }, [externalControl, isOpen]);
 
   const animatedTitleBarStyle = useAnimatedStyle(() => ({
     width: width.value,
@@ -150,7 +137,7 @@ export default function Collapsible(
     opacity: opacity.value,
   }));
 
-  const icon = <ThemeText type="default" style={styles.icon}>{isOpen ? "▲" : "▼"}</ThemeText>
+  const icon = <ThemeText type="default" style={styles.icon}>{internalIsOpen ? "▲" : "▼"}</ThemeText>
 
   return (
     <Animated.View style={[style, { backgroundColor }]}>
@@ -158,8 +145,8 @@ export default function Collapsible(
         style={[
           styles.titleContainer, 
           { backgroundColor: isHovering ? accentColor : backgroundColor 
-            , borderBottomLeftRadius: isOpen ? 0 : centerHeader ? 10 : 0
-            , borderBottomRightRadius: isOpen ? 0 : 10
+            , borderBottomLeftRadius: centerHeader && !internalIsOpen ? 10 : 0
+            , borderBottomRightRadius: internalIsOpen ? 0 : 10
             , paddingHorizontal: centerHeader ? 5 : 0
           }]}
         onPress={handleTouch}
@@ -189,7 +176,7 @@ export default function Collapsible(
         <View 
           onLayout={handleLayout} 
           style={[styles.contentContainer, childrenStyle]}
-          pointerEvents={isOpen ? "auto" : "none"}
+          pointerEvents={internalIsOpen ? "auto" : "none"}
         >
           {children}
         </View>

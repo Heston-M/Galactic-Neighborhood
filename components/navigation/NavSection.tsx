@@ -1,60 +1,70 @@
-import { Topic } from "@/types/topic";
-import { useEffect, useRef, useState } from "react";
-import { StyleProp, StyleSheet, ViewStyle } from "react-native";
-import Collapsible from "../general/Collapsible";
-import ThemeText from "../general/ThemeText";
+import Collapsible from "@/components/general/Collapsible";
+import ThemeText from "@/components/general/ThemeText";
+import NavButton from "@/components/navigation/NavButton";
+import { useNavContext } from "@/contexts/NavContext";
+import { useThemeContext } from "@/contexts/ThemeContext";
+import { Route, RouteSet } from "@/types/route";
+import { parseNameText } from "@/utils/markdown";
+import { findTopic } from "@/utils/routeParsing";
+import { useEffect, useState } from "react";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 interface NavSectionProps {
-  topic: Topic;
-  header?: React.ReactNode;
-  centerHeader?: boolean;
-  children?: React.ReactNode;
+  routeSet: RouteSet;
+  level?: number;
+  topStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
-  childrenStyle?: StyleProp<ViewStyle>;
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
 }
 
-export default function NavSection({ topic, header, centerHeader = false, children, style, childrenStyle, isOpen, onOpen, onClose }: NavSectionProps) {
-  const [collapsibleSetOpen, setCollapsibleSetOpen] = useState(0);
-  const [collapsibleSetClose, setCollapsibleSetClose] = useState(0);
-  const prevIsOpenRef = useRef<boolean | undefined>(undefined);
+export default function NavSection({ routeSet, level = -1, topStyle, style }: NavSectionProps) {
+  const [openSubset, setOpenSubset] = useState<string | null>(null);
 
-  // When nav menu sets isOpen, toggle the collapsible if it isn't already in the desired state
+  const { getThemeColor } = useThemeContext();
+  const backgroundColor = getThemeColor("primary");
+
+  const { menuOpen } = useNavContext();
+
   useEffect(() => {
-    if (prevIsOpenRef.current === undefined) {
-      prevIsOpenRef.current = isOpen;
-      return;
+    if (!menuOpen) {
+      setOpenSubset(null);
     }
+  }, [menuOpen]);
 
-    if (prevIsOpenRef.current !== isOpen) {
-      if (isOpen) {
-        setCollapsibleSetOpen(prev => prev + 1);
-      } else {
-        setCollapsibleSetClose(prev => prev + 1);
-      }
-      prevIsOpenRef.current = isOpen;
-    }
-  }, [isOpen]);
-  
   return (
-    <Collapsible 
-      topic={topic} 
-      header={header ?? <ThemeText type="subheader" topic={topic}>{topic.charAt(0).toUpperCase() + topic.slice(1)} </ThemeText>} 
-      defaultOpen={isOpen} 
-      flipHeaderOrder={true} 
-      centerHeader={centerHeader}
-      style={style} 
-      childrenStyle={[styles.contentContainer, childrenStyle]}
-      externalControl={true}
-      setOpen={collapsibleSetOpen}
-      setClose={collapsibleSetClose}
-      onOpen={onOpen}
-      onClose={onClose}
-    >
-      {children}
-    </Collapsible>
+    routeSet.subsets && routeSet.subsets.length > 0 ? (
+    <View style={topStyle}>
+      {routeSet.subsets.map((subset: RouteSet) => (
+        <Collapsible 
+          key={subset.name}
+          topic={findTopic(subset)} 
+          header={<ThemeText type="subheader" topic={findTopic(subset)} style={{ fontSize: 20 - (level * 2) }}>{parseNameText(subset.name)} </ThemeText>} 
+          defaultOpen={openSubset === subset.name} 
+          flipHeaderOrder={true} 
+          style={style} 
+          childrenStyle={[styles.contentContainer, { backgroundColor }]}
+          externalControl={true}
+          isOpen={openSubset === subset.name}
+          requestOpen={() => { setOpenSubset(subset.name); }}
+          requestClose={() => { setOpenSubset(null); }}
+        >
+          {subset.subsets && subset.subsets.length > 0 && (
+            <View style={{ marginTop: 5, marginLeft: 32 }}>
+              {subset.subsets.map((subsubset: RouteSet) => (
+                <NavSection
+                  key={subsubset.name}
+                  routeSet={subset}
+                  level={level + 1}
+                />
+              ))}
+            </View>
+          )}
+          {subset.routes && subset.routes.length > 0 && subset.routes.map((route: Route) => (
+            <NavButton key={route.pageName} route={route} onPress={() => { setOpenSubset(null); }} />
+          ))}
+        </Collapsible>
+      ))}
+    </View>
+    ) : null
   );
 }
 
