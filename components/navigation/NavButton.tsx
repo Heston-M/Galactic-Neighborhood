@@ -1,5 +1,6 @@
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { Route } from "@/types/route";
+import { parseNameText } from "@/utils/markdown";
 import { Pressable, StyleSheet } from "react-native";
 import NavLink from "./NavLink";
 
@@ -9,7 +10,8 @@ interface NavButtonProps {
 }
 
 export default function NavButton({ route, onPress }: NavButtonProps) {
-  const text = route.pageName.charAt(0).toUpperCase() + route.pageName.slice(1);
+  const text = parseNameText(route.pageName);
+  
   const { getThemeColor } = useThemeContext();
   const backgroundColor = getThemeColor("shade", route.topic);
   const borderColor = getThemeColor("secondary");

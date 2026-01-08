@@ -30,6 +30,7 @@ export default function NavMenu({ style }: NavMenuProps) {
       level={0}
       topStyle={wideScreenContent ? styles.sectionsContainerWide : [styles.sectionsContainerNarrow, { borderColor }]}
       style={styles.section}
+      wide={wideScreenContent}
     />
     : null
   );
@@ -37,25 +38,28 @@ export default function NavMenu({ style }: NavMenuProps) {
   return (
     <ThemeView style={[styles.container, style]}>
       <QuickAccessIcon onPress={() => {}} />
-      {routeSet && routeSet.subsets && routeSet.subsets.length > 0 
-      ? wideScreenContent 
-        ? menuSectionsContent
-        : <View style={styles.menuCollapsibleContainer}>
-            <Collapsible
+      <View style={styles.menuContainer}>
+        {routeSet && routeSet.subsets && routeSet.subsets.length > 0 
+        ? wideScreenContent 
+          ? menuSectionsContent
+          : <Collapsible
               style={styles.menu}
-              childrenStyle={{ padding: 0, backgroundColor }}
+              childrenStyle={[styles.menuCollapsibleContent, { backgroundColor, borderColor }]}
               topic="general"
               header={<ThemeText type="subheader" topic="general">Menu</ThemeText>}
               defaultOpen={false}
+              navHeader={true}
               centerHeader={true}
+              externalControl={true}
               isOpen={menuOpen}
               requestOpen={() => { setMenuOpen(true); }}
               requestClose={() => { setMenuOpen(false); }}
+              decoupleContent={true}
             >
               {menuSectionsContent}
             </Collapsible>
-          </View>
-      : <ThemeText type="subheader" topic="general">One moment...</ThemeText>}
+        : <ThemeText type="subheader" topic="general">One moment...</ThemeText>}
+      </View>
       <QuickAccessIcon onPress={() => {}} />
     </ThemeView>
   );
@@ -67,10 +71,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
-  menuCollapsibleContainer: {
+  menuContainer: {
     flex: 1,
     height: "100%",
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
   },
   menu: {
@@ -78,6 +83,13 @@ const styles = StyleSheet.create({
     width: "100%",
     top: 0,
     zIndex: 11,
+  },
+  menuCollapsibleContent: {
+    position: "absolute",
+    flex: 1,
+    top: 9,
+    width: "100%",
+    padding: 0,
   },
   sectionsContainerWide: {
     flexDirection: "row",
@@ -89,7 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     paddingVertical: 5,
     borderWidth: 1,
-    borderTopWidth: 0,
+    borderTopWidth: 2,
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
     gap: 5,
