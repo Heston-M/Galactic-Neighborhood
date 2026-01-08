@@ -12,6 +12,8 @@ type NavContextShape = {
   topic: Topic;
   loading: boolean;
   routeSet?: RouteSet;
+  menuOpen: boolean;
+  setMenuOpen: (menuOpen: boolean) => void;
   navigateTo: (route: string | Route) => void;
 }
 
@@ -26,6 +28,8 @@ export default function NavContextProvider({ children }: { children: React.React
   const [currentPage, setCurrentPage] = useState<JsonPage>(defaultPage as JsonPage);
   const [loading, setLoading] = useState(false);
   const [routeSet, setRouteSet] = useState<RouteSet>();
+
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchRouteSet = async () => {
@@ -44,6 +48,7 @@ export default function NavContextProvider({ children }: { children: React.React
     if (!parsedRoute || !isValidRoute(parsedRoute)) {
       return;
     }
+    setMenuOpen(false);
     setLoading(true);
     router.push({
       pathname: `/${parsedRoute.topic}/${parsedRoute.pageName}` as RelativePathString,
@@ -89,7 +94,7 @@ export default function NavContextProvider({ children }: { children: React.React
   }, [topic, pageName]);
 
   return (
-    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, navigateTo }}>
+    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, menuOpen, setMenuOpen, navigateTo }}>
       {children}
     </NavContext.Provider>
   );
