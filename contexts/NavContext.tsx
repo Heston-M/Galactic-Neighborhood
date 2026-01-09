@@ -15,6 +15,7 @@ type NavContextShape = {
   menuOpen: boolean;
   setMenuOpen: (menuOpen: boolean) => void;
   navigateTo: (route: string | Route) => void;
+  doneLoadingPage: () => void;
 }
 
 const NavContext = createContext<NavContextShape | undefined>(undefined);
@@ -51,10 +52,12 @@ export default function NavContextProvider({ children }: { children: React.React
     }
     setMenuOpen(false);
     setLoading(true);
-    router.push({
-      pathname: `/${parsedRoute.topic}/${parsedRoute.pageName}` as RelativePathString,
-    });
-    loadPage(parsedRoute);
+    setTimeout(() => {
+      router.push({
+        pathname: `/${parsedRoute.topic}/${parsedRoute.pageName}` as RelativePathString,
+      });
+      loadPage(parsedRoute);
+    }, 500);
   }
 
   const loadPage = async (route: Route) => {
@@ -65,8 +68,15 @@ export default function NavContextProvider({ children }: { children: React.React
     } catch (error) {
       setCurrentPage(defaultPage as JsonPage);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false); // if the page takes 10+ seconds to load, show what's there
+      }, 10000);
     }
+  }
+
+  // called when the page is done loading
+  const doneLoadingPage = () => {
+    setLoading(false);
   }
 
   // if the topic or page name changes unexpectedly, load the new page
@@ -90,7 +100,7 @@ export default function NavContextProvider({ children }: { children: React.React
   }, [topic, pageName]);
 
   return (
-    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, menuOpen, setMenuOpen, navigateTo }}>
+    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, menuOpen, setMenuOpen, navigateTo, doneLoadingPage }}>
       {children}
     </NavContext.Provider>
   );
