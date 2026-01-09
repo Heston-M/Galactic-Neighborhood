@@ -76,5 +76,5 @@ export const isValidRoute = (route: string | Route) => {
 }
 
 export const constructRoute = (route: Route) => {
-  return `/${route.topic}${route.subtopic ? `/${route.subtopic}` : ''}${route.pageName}`;
+  return `/${route.topic}/${route.subtopic ? `${route.subtopic}/` : ''}${route.pageName}`;
 }

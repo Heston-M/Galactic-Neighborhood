@@ -4,8 +4,9 @@ import ThemeText from "@/components/general/ThemeText";
 import ThemeView from "@/components/general/ThemeView";
 import Note from "@/components/rules/Note";
 import Table from "@/components/rules/Table";
+import { useNavContext } from "@/contexts/NavContext";
 import { JsonPage } from "@/types/page";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 interface PageRendererProps {
@@ -16,7 +17,12 @@ interface PageRendererProps {
 export default function PageRenderer({ page, expandCollapsibles = true }: PageRendererProps) {
   const [containerWidth, setContainerWidth] = useState(0);
 
-  // Title component
+  const { doneLoadingPage } = useNavContext();
+
+  useEffect(() => {
+    doneLoadingPage();
+  }, [page.route]);
+
   const title = <View style={styles.titleContainer}>
       <ThemeText type="title" topic={page.topic}>{page.title}</ThemeText>
     </View>;

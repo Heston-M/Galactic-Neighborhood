@@ -51,3 +51,10 @@ export const pageTableMap: Record<Topic, PageTableName> = {
   magic: 'magic_pages',
   rules: 'rules_pages',
 }
+
+export type CacheTableEntry = {
+  name: string;
+  age: number;
+}
+
+export type CacheTable = Array<CacheTableEntry>;

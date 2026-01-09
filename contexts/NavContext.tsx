@@ -1,9 +1,9 @@
 import defaultPage from "@/constants/defaultPage.json";
-import { getAllPageRoutes, getPageByName as getPageByNameService } from "@/services/database/pages";
-import { JsonPage, pageTableMap } from "@/types/page";
+import { useCacheContext } from "@/contexts/CacheContext";
+import { JsonPage } from "@/types/page";
 import { Route, RouteSet } from "@/types/route";
 import { Topic } from "@/types/topic";
-import { isValidRoute, parseRoute } from "@/utils/routeParsing";
+import { constructRoute, isValidRoute, parseRoute } from "@/utils/routeParsing";
 import { RelativePathString, router, usePathname } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -15,6 +15,7 @@ type NavContextShape = {
   menuOpen: boolean;
   setMenuOpen: (menuOpen: boolean) => void;
   navigateTo: (route: string | Route) => void;
+  doneLoadingPage: () => void;
 }
 
 const NavContext = createContext<NavContextShape | undefined>(undefined);
@@ -25,6 +26,8 @@ export default function NavContextProvider({ children }: { children: React.React
   const topic = globalRoute?.topic ?? "general";
   const pageName = globalRoute?.pageName;
 
+  const { getPage, getRouteSet } = useCacheContext();
+
   const [currentPage, setCurrentPage] = useState<JsonPage>(defaultPage as JsonPage);
   const [loading, setLoading] = useState(false);
   const [routeSet, setRouteSet] = useState<RouteSet>();
@@ -34,8 +37,7 @@ export default function NavContextProvider({ children }: { children: React.React
   useEffect(() => {
     const fetchRouteSet = async () => {
       try {
-        const routeSet = await getAllPageRoutes();
-        setRouteSet(routeSet);
+        setRouteSet(await getRouteSet());
       } catch (error) {
         console.error('Error fetching route set:', error);
       }
@@ -50,27 +52,31 @@ export default function NavContextProvider({ children }: { children: React.React
     }
     setMenuOpen(false);
     setLoading(true);
-    router.push({
-      pathname: `/${parsedRoute.topic}/${parsedRoute.pageName}` as RelativePathString,
-    });
-    loadPage(parsedRoute);
+    setTimeout(() => {
+      router.push({
+        pathname: constructRoute(parsedRoute) as RelativePathString,
+      });
+      loadPage(parsedRoute);
+    }, 500);
   }
 
   const loadPage = async (route: Route) => {
     setLoading(true);
-    const tableName = pageTableMap[route.topic];    // get table name from topic
     try {
-      const page = await getPageByNameService(route.pageName, tableName);    // get page from table name and page name
-      if (page) {
-        setCurrentPage(page as JsonPage);
-      } else {
-        setCurrentPage(defaultPage as JsonPage);
-      }
+      const page = await getPage(route);    // get page from cache or database
+      setCurrentPage(page);
     } catch (error) {
       setCurrentPage(defaultPage as JsonPage);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false); // if the page takes 10+ seconds to load, show what's there
+      }, 10000);
     }
+  }
+
+  // called when the page is done loading
+  const doneLoadingPage = () => {
+    setLoading(false);
   }
 
   // if the topic or page name changes unexpectedly, load the new page
@@ -94,7 +100,7 @@ export default function NavContextProvider({ children }: { children: React.React
   }, [topic, pageName]);
 
   return (
-    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, menuOpen, setMenuOpen, navigateTo }}>
+    <NavContext.Provider value={{ currentPage, topic: topic as Topic, loading, routeSet, menuOpen, setMenuOpen, navigateTo, doneLoadingPage }}>
       {children}
     </NavContext.Provider>
   );
