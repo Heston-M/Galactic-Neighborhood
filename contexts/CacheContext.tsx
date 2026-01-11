@@ -83,12 +83,14 @@ export default function CacheContextProvider({ children }: { children: React.Rea
         );
       }
     }
+
     if (page) {
       setTimeout(() => {
         cleanupPageCache();
       }, 1000 * 10); // 10 seconds
       return page;
     }
+    
     throw new PageFetchError(
       `Page "${route.pageName}" not found in table "${pageTableMap[route.topic]}"`,
       pageTableMap[route.topic],
@@ -102,8 +104,6 @@ export default function CacheContextProvider({ children }: { children: React.Rea
     if (requestTime - routeSetCache.age < 1000 * 60 * 60 * 24) { // 24 hours
       const cachedRouteSet = await storage.get<RouteSet>("route_set");
       if (cachedRouteSet) {
-        routeSetCache.age = requestTime;
-        setRouteSetCache({ ...routeSetCache, age: requestTime });
         return cachedRouteSet;
       }
     }

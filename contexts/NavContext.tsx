@@ -3,7 +3,7 @@ import { useCacheContext } from "@/contexts/CacheContext";
 import { JsonPage } from "@/types/page";
 import { Route, RouteSet } from "@/types/route";
 import { Topic } from "@/types/topic";
-import { isValidRoute, parseRoute } from "@/utils/routeParsing";
+import { constructRoute, isValidRoute, parseRoute } from "@/utils/routeParsing";
 import { RelativePathString, router, usePathname } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -54,7 +54,7 @@ export default function NavContextProvider({ children }: { children: React.React
     setLoading(true);
     setTimeout(() => {
       router.push({
-        pathname: `/${parsedRoute.topic}/${parsedRoute.pageName}` as RelativePathString,
+        pathname: constructRoute(parsedRoute) as RelativePathString,
       });
       loadPage(parsedRoute);
     }, 500);
