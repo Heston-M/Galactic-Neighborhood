@@ -3,7 +3,7 @@ import { CacheTable, CacheTableEntry, JsonPage, pageTableMap } from "@/types/pag
 import { Route, RouteSet } from "@/types/route";
 import { constructRoute } from "@/utils/routeParsing";
 import { storage } from "@/utils/storage";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type CacheContextShape = {
   getPage: (route: Route) => Promise<JsonPage>;
@@ -13,8 +13,35 @@ type CacheContextShape = {
 const CacheContext = createContext<CacheContextShape | undefined>(undefined);
 
 export default function CacheContextProvider({ children }: { children: React.ReactNode }) {
-  const [pageCache, setPageCache] = useState<CacheTable>([] as CacheTable);
-  const [routeSetCache, setRouteSetCache] = useState<CacheTableEntry>({ name: 'routeSet', age: 0 });
+  const [pageTable, setPageTable] = useState<CacheTable>([] as CacheTable);
+  const [routeSetCache, setRouteSetCache] = useState<CacheTableEntry>({ name: 'route_set_cache', age: 0 });
+
+  useEffect(() => {
+    const fetchPageCache = async () => {
+      const cachedPageTable = await storage.get<CacheTable>("page_table");
+      if (cachedPageTable) {
+        setPageTable(cachedPageTable);
+      }
+    }
+    const fetchRouteSetCache = async () => {
+      const cachedRouteSetEntry = await storage.get<CacheTableEntry>(routeSetCache.name);
+      if (cachedRouteSetEntry) {
+        setRouteSetCache(cachedRouteSetEntry);
+      }
+    }
+    fetchPageCache();
+    fetchRouteSetCache();
+  }, []);
+
+  // save the page cache to storage when it changes
+  useEffect(() => {
+    storage.set("page_table", pageTable);
+  }, [pageTable]);
+
+  // save the route set cache to storage when it changes
+  useEffect(() => {
+    storage.set(routeSetCache.name, routeSetCache);
+  }, [routeSetCache]);
 
   /**
    * @description
@@ -24,48 +51,43 @@ export default function CacheContextProvider({ children }: { children: React.Rea
    * @throws PageFetchError if the page is not found or an error occurs
    */
   const getPage = async (route: Route): Promise<JsonPage> => {
+    let page: JsonPage | null = null;
     const requestTime = Date.now();
     const pageRouteString = `page_${constructRoute(route)}`;
 
     let useCache = false;
-    const cachedPageEntry = pageCache.find((entry) => entry.name === pageRouteString);
-    if (cachedPageEntry) {
-      if (requestTime - cachedPageEntry.age < 1000 * 60 * 60 * 24) { // 24 hours
-        cachedPageEntry.age = requestTime;
-        setPageCache([...pageCache, cachedPageEntry]);
-        useCache = true;
-      }
+    const cachedPageEntry = pageTable.find((entry) => entry.name === pageRouteString);
+    if (cachedPageEntry && requestTime - cachedPageEntry.age < 1000 * 60 * 60 * 24) { // younger than 24 hours
+      useCache = true;
     }
 
     if (useCache) {
-      const cachedPage = await storage.get<JsonPage>(pageRouteString);
-      if (cachedPage) {
-        return cachedPage;
+      page = await storage.get<JsonPage>(pageRouteString);
+    } else {
+      const tableName = pageTableMap[route.topic];
+      try {
+        page = await getPageByName(route.pageName, tableName);
+        if (page) {
+          await storage.set(pageRouteString, page);
+          setPageTable([...pageTable, { name: pageRouteString, age: requestTime }]);
+        }
+      } catch (error) {
+        if (error instanceof PageFetchError) {
+          throw error;
+        }
+        throw new PageFetchError(
+          `Unexpected error fetching page "${route.pageName}" from "${route.topic}": ${error instanceof Error ? error.message : String(error)}`,
+          pageTableMap[route.topic],
+          route.pageName,
+          error
+        );
       }
     }
-
-    const tableName = pageTableMap[route.topic];
-    try {
-      const page = await getPageByName(route.pageName, tableName);
-      if (page) {
-        await storage.set(pageRouteString, page);
-        const newCachedPageEntry: CacheTableEntry = {
-          name: pageRouteString,
-          age: requestTime,
-        };
-        setPageCache([...pageCache, newCachedPageEntry]);
-        return page;
-      }
-    } catch (error) {
-      if (error instanceof PageFetchError) {
-        throw error;
-      }
-      throw new PageFetchError(
-        `Unexpected error fetching page "${route.pageName}" from "${route.topic}": ${error instanceof Error ? error.message : String(error)}`,
-        pageTableMap[route.topic],
-        route.pageName,
-        error
-      );
+    if (page) {
+      setTimeout(() => {
+        cleanupPageCache();
+      }, 1000 * 10); // 10 seconds
+      return page;
     }
     throw new PageFetchError(
       `Page "${route.pageName}" not found in table "${pageTableMap[route.topic]}"`,
@@ -77,10 +99,8 @@ export default function CacheContextProvider({ children }: { children: React.Rea
   const getRouteSet = async (): Promise<RouteSet> => {
     const requestTime = Date.now();
 
-    const useCache = (requestTime - routeSetCache.age < 1000 * 60 * 60 * 24); // 24 hours
-
-    if (useCache) {
-      const cachedRouteSet = await storage.get<RouteSet>(routeSetCache.name);
+    if (requestTime - routeSetCache.age < 1000 * 60 * 60 * 24) { // 24 hours
+      const cachedRouteSet = await storage.get<RouteSet>("route_set");
       if (cachedRouteSet) {
         routeSetCache.age = requestTime;
         setRouteSetCache({ ...routeSetCache, age: requestTime });
@@ -89,9 +109,25 @@ export default function CacheContextProvider({ children }: { children: React.Rea
     }
 
     const routeSet = await getAllPageRoutes();
-    await storage.set(routeSetCache.name, routeSet);
+    await storage.set("route_set", routeSet);
     setRouteSetCache({ ...routeSetCache, age: requestTime });
     return routeSet;
+  }
+
+  const cleanupPageCache = () => {
+    const now = Date.now();
+    setPageTable((currentPageTable) => {
+      let newPageTable: CacheTable = [];
+      for (const entry of currentPageTable) {
+        if (now - entry.age < 1000 * 60 * 60 * 24) { // younger than 24 hours
+          newPageTable.push(entry);
+        }
+        else {
+          storage.remove(entry.name);
+        }
+      }
+      return newPageTable;
+    });
   }
 
   return (
